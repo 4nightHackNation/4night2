@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 export default function EditorPage() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const [formData, setFormData] = useState({
     id: `PL_2025_${String(Math.floor(Math.random() * 900) + 100)}`,
@@ -35,13 +35,13 @@ export default function EditorPage() {
     { id: "s1", name: "Projekt został przyjęty do prac rady ministrów", date: "", status: "pending" as const },
   ]);
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || (user?.role !== "officer" && user?.role !== "admin")) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold mb-4">Brak dostępu</h1>
           <p className="text-muted-foreground mb-6">
-            Aby tworzyć lub edytować akty prawne, musisz być zalogowany.
+            Aby tworzyć lub edytować akty prawne, musisz być zalogowany jako urzędnik.
           </p>
           <Link to="/" className="text-primary hover:underline">
             Wróć do strony głównej
