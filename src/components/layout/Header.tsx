@@ -29,6 +29,8 @@ export function Header() {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
   const [citizenEmail, setCitizenEmail] = useState("");
   const [citizenPassword, setCitizenPassword] = useState("");
   const [activeLoginTab, setActiveLoginTab] = useState("citizen");
@@ -50,11 +52,16 @@ export function Header() {
   };
 
   const handleLogin = async () => {
-    const success = await login(loginEmail, loginPassword, "officer");
+    const email = activeLoginTab === "officer" ? loginEmail : adminEmail;
+    const password = activeLoginTab === "officer" ? loginPassword : adminPassword;
+    const role = activeLoginTab as "officer" | "admin";
+    const success = await login(email, password, role);
     if (success) {
       setLoginDialogOpen(false);
       setLoginEmail("");
       setLoginPassword("");
+      setAdminEmail("");
+      setAdminPassword("");
     }
   };
 
@@ -217,8 +224,9 @@ export function Header() {
                   </DialogHeader>
                   <div className="pt-4">
                     <Tabs value={activeLoginTab} onValueChange={setActiveLoginTab} className="w-full">
-                      <TabsList className="grid w-full grid-cols-2 mb-4">
+                      <TabsList className="grid w-full grid-cols-3 mb-4">
                         <TabsTrigger value="officer">Urzędnik</TabsTrigger>
+                        <TabsTrigger value="admin">Administrator</TabsTrigger>
                         <TabsTrigger value="citizen">Obywatel</TabsTrigger>
                       </TabsList>
 
@@ -229,11 +237,6 @@ export function Header() {
                             <p className="text-sm font-medium text-foreground mb-1">🔑 Konto Urzędnika:</p>
                             <p className="text-xs text-muted-foreground">Email: <span className="font-mono bg-background px-1 rounded">{TEST_ACCOUNTS.officer.email}</span></p>
                             <p className="text-xs text-muted-foreground">Hasło: <span className="font-mono bg-background px-1 rounded">{TEST_ACCOUNTS.officer.password}</span></p>
-                          </div>
-                          <div className="pt-2 border-t border-border">
-                            <p className="text-sm font-medium text-foreground mb-1">👨‍💼 Konto Admina:</p>
-                            <p className="text-xs text-muted-foreground">Email: <span className="font-mono bg-background px-1 rounded">{TEST_ACCOUNTS.admin.email}</span></p>
-                            <p className="text-xs text-muted-foreground">Hasło: <span className="font-mono bg-background px-1 rounded">{TEST_ACCOUNTS.admin.password}</span></p>
                           </div>
                         </div>
                         
@@ -267,7 +270,50 @@ export function Header() {
                           Zaloguj się
                         </Button>
                         <p className="text-xs text-muted-foreground text-center">
-                          Logowanie dla pracowników administracji publicznej i administratorów
+                          Logowanie dla pracowników administracji publicznej
+                        </p>
+                      </TabsContent>
+
+                      {/* Admin Login Tab */}
+                      <TabsContent value="admin" className="space-y-4">
+                        <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                          <p className="text-sm font-medium text-amber-900 mb-1">👨‍💼 Konto Administratora:</p>
+                          <p className="text-xs text-amber-700">Email: <span className="font-mono bg-white px-1 rounded">{TEST_ACCOUNTS.admin.email}</span></p>
+                          <p className="text-xs text-amber-700">Hasło: <span className="font-mono bg-white px-1 rounded">{TEST_ACCOUNTS.admin.password}</span></p>
+                          <p className="text-xs text-amber-600 mt-2">Sekcja dla administratorów systemu</p>
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="admin-email" className="block text-sm font-medium mb-2">
+                            Adres e-mail
+                          </label>
+                          <Input
+                            id="admin-email"
+                            type="email"
+                            value={adminEmail}
+                            onChange={(e) => setAdminEmail(e.target.value)}
+                            placeholder={TEST_ACCOUNTS.admin.email}
+                            className="h-12"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="admin-password" className="block text-sm font-medium mb-2">
+                            Hasło
+                          </label>
+                          <Input
+                            id="admin-password"
+                            type="password"
+                            value={adminPassword}
+                            onChange={(e) => setAdminPassword(e.target.value)}
+                            placeholder={TEST_ACCOUNTS.admin.password}
+                            className="h-12"
+                          />
+                        </div>
+                        <Button onClick={handleLogin} className="w-full h-12 bg-amber-600 hover:bg-amber-700">
+                          Zaloguj się
+                        </Button>
+                        <p className="text-xs text-muted-foreground text-center">
+                          Logowanie dla administratorów systemu
                         </p>
                       </TabsContent>
 
