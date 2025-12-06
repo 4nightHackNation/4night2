@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ChevronRight, Save, Plus, Trash2 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -23,17 +23,43 @@ import {
 } from "@/data/mockData";
 import { toast } from "sonner";
 
+type StatusType =
+  | "planowany"
+  | "procedowany"
+  | "uchwalony"
+  | "odrzucony"
+  | "wycofany";
+type PriorityType = "low" | "normal" | "high";
+
+interface FormState {
+  id: string;
+  title: string;
+  summary: string;
+  pdfFile: File | null;
+  status: StatusType;
+  category: string;
+  tags: string[];
+  priority: PriorityType;
+  sponsor: string;
+  hasConsultation: boolean;
+  consultationStart: string;
+  consultationEnd: string;
+  urgency: string;
+}
+
 export default function EditorPage() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormState>({
     id: `PL_2025_${String(Math.floor(Math.random() * 900) + 100)}`,
     title: "",
     summary: "",
+    pdfFile: null,
     status: "planowany",
     category: "",
-    tags: [] as string[],
+    tags: [],
     priority: "normal",
     sponsor: "",
     hasConsultation: false,
@@ -50,6 +76,22 @@ export default function EditorPage() {
       status: "pending" as const,
     },
   ]);
+
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // create/revoke preview URL
+  useEffect(() => {
+    if (!formData.pdfFile) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(formData.pdfFile);
+    setPreviewUrl(url);
+    return () => {
+      URL.revokeObjectURL(url);
+      setPreviewUrl(null);
+    };
+  }, [formData.pdfFile]);
 
   if (
     !isAuthenticated ||
@@ -71,8 +113,44 @@ export default function EditorPage() {
     );
   }
 
-  const handleChange = (field: string, value: string | boolean | string[]) => {
+  const handleChange = (
+    field: keyof FormState,
+    value: string | boolean | File | null | StatusType | PriorityType | string[]
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // validate file: MIME + extension
+  const isPdfFile = (file: File | null) => {
+    if (!file) return false;
+    const okMime = file.type === "application/pdf";
+    const okExt = file.name.toLowerCase().endsWith(".pdf");
+    return okMime || okExt;
+  };
+
+  // file change handler with size limit (10MB) and validation
+  const onPdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+
+    if (!file) {
+      handleChange("pdfFile", null);
+      return;
+    }
+
+    const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+    if (file.size > MAX_BYTES) {
+      toast.error("Plik jest za duży. Maksymalnie 10 MB.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    if (!isPdfFile(file)) {
+      toast.error("Wybrany plik nie jest plikiem PDF.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    handleChange("pdfFile", file);
   };
 
   const addStage = () => {
@@ -84,9 +162,7 @@ export default function EditorPage() {
   };
 
   const removeStage = (id: string) => {
-    if (stages.length > 1) {
-      setStages(stages.filter((s) => s.id !== id));
-    }
+    if (stages.length > 1) setStages(stages.filter((s) => s.id !== id));
   };
 
   const updateStage = (id: string, field: string, value: string) => {
@@ -103,11 +179,29 @@ export default function EditorPage() {
       return;
     }
 
-    // In real app, this would send data to backend
-    toast.success("Akt został zapisany", {
-      description: `ID: ${formData.id}`,
-    });
+    if (!formData.pdfFile) {
+      toast.error("Dodaj PDF z treścią aktu");
+      return;
+    }
 
+    const payload = new FormData();
+    payload.append("id", formData.id);
+    payload.append("title", formData.title);
+    payload.append("category", formData.category);
+    payload.append("status", formData.status);
+    payload.append("priority", formData.priority);
+    payload.append("sponsor", formData.sponsor);
+    payload.append("summary", formData.summary);
+    payload.append("hasConsultation", String(formData.hasConsultation));
+    if (formData.consultationStart)
+      payload.append("consultationStart", formData.consultationStart);
+    if (formData.consultationEnd)
+      payload.append("consultationEnd", formData.consultationEnd);
+    if (formData.pdfFile) payload.append("pdf", formData.pdfFile);
+
+    // fetch("/api/acts", { method: "POST", body: payload }) // uncomment and adapt
+
+    toast.success("Akt został zapisany", { description: `ID: ${formData.id}` });
     navigate("/");
   };
 
@@ -155,6 +249,83 @@ export default function EditorPage() {
                     className="mt-2 h-12"
                     required
                   />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label htmlFor="pdfFile" className="text-base">
+                    Treść aktu (PDF)
+                  </Label>
+
+                  {/* custom upload: label changes border on hover, cursor pointer; input invisible overlay */}
+                  <div className="relative mt-2 group">
+                    <label
+                      htmlFor="pdfFile"
+                      className="
+                        flex items-center justify-center h-12 px-4 rounded-md
+                        border border-border
+                        text-sm text-foreground
+                        cursor-pointer
+                        transition-colors duration-150
+                        hover:border-primary
+                        group-hover:bg-primary
+                        group-hover:text-primary-foreground
+                        group-hover:border-primary
+                      "
+                    >
+                      Wybierz plik PDF
+                    </label>
+
+                    <input
+                      id="pdfFile"
+                      ref={fileInputRef}
+                      type="file"
+                      accept="application/pdf"
+                      onChange={onPdfChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  </div>
+
+                  <div className="mt-2">
+                    <Button type="button" variant="outline" size="sm">
+                      ogup ai
+                    </Button>
+                  </div>
+
+                  {formData.pdfFile ? (
+                    <div className="mt-2">
+                      <p className="text-sm text-muted-foreground">
+                        Wybrano: {formData.pdfFile.name} —{" "}
+                        {Math.round(formData.pdfFile.size / 1024)} KB
+                      </p>
+
+                      <div className="flex items-center gap-3 mt-2">
+                        {previewUrl && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => window.open(previewUrl, "_blank")}
+                          >
+                            Otwórz podgląd PDF
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => {
+                            if (fileInputRef.current)
+                              fileInputRef.current.value = "";
+                            handleChange("pdfFile", null);
+                          }}
+                        >
+                          Usuń plik
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Brak załadowanego PDF (opcjonalne)
+                    </p>
+                  )}
                 </div>
 
                 <div className="md:col-span-2">
@@ -316,8 +487,7 @@ export default function EditorPage() {
                   size="sm"
                   onClick={addStage}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Dodaj etap
+                  <Plus className="h-4 w-4 mr-2" /> Dodaj etap
                 </Button>
               </div>
 
@@ -386,8 +556,7 @@ export default function EditorPage() {
                 type="submit"
                 className="bg-primary hover:bg-gov-navy-dark"
               >
-                <Save className="h-5 w-5 mr-2" />
-                Zapisz akt
+                <Save className="h-5 w-5 mr-2" /> Zapisz akt
               </Button>
             </div>
           </form>
