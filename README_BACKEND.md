@@ -17,7 +17,12 @@ Interaktywna platforma do śledzenia procesów legislacyjnych z wbudowanym syste
 - 📊 Zarządzanie postępem legislacyjnym
 
 ### Dla Administratorów
-- 👥 Zarządzanie kontami urzędników
+- 👥 **Zarządzanie kontami urzędników** (dodawanie, edytowanie, usuwanie)
+- 🔐 **Generowanie bezpiecznych haseł** (12-znakowe z literami, cyframi, symbolami)
+- 📊 **Statystyki systemowe** (liczba aktywnych urzędników, total projektów)
+- 🔍 **Wyszukiwanie i filtrowanie** accounts w real-time
+- 📋 **Kopiowanie danych do schowka** (email, hasło)
+- 🔄 **Zarządzanie statusem** (aktywacja/deaktywacja kont)
 - ⚙️ Administracja systemem
 - 📋 Pełny dostęp do wszystkich funkcji
 
@@ -29,19 +34,23 @@ Interaktywna platforma do śledzenia procesów legislacyjnych z wbudowanym syste
 - **Routing**: React Router v6
 - **API Client**: TODO (do implementacji)
 
-## Dane Testowe
+## Logowanie
 
-### Logowanie Obywatela
+### Obywatel
 - Email: `obywatel@example.com`
 - Hasło: `obywatel123`
+- Tab logowania: **Obywatel**
 
-### Logowanie Urzędnika
+### Urzędnik
 - Email: `urzednik@gov.pl`
 - Hasło: `urzednik123`
+- Tab logowania: **Urzędnik**
 
-### Logowanie Administratora
+### Administrator
 - Email: `admin@gov.pl`
 - Hasło: `admin123`
+- Tab logowania: **Administrator**
+- Dostęp: `/admin-zarzadzanie` - Panel zarządzania kontami urzędników
 
 ## Instalacja i uruchomienie
 
@@ -137,23 +146,30 @@ Poniżej znajduje się lista endpointów, które muszą być zaimplementowane w 
 **`GET /api/users/officers`** (admin)
 - Lista wszystkich urzędników
 - Response: `User[]`
-- Lokalizacja kodu: `src/pages/AdminManagementPage.tsx`
+- Lokalizacja kodu: `src/pages/AdminManagementPage.tsx:160-200`
 
 **`POST /api/users/officers`** (admin)
 - Tworzenie nowego konta urzędnika
-- Request: `{ email: string, name: string, role: "officer" | "admin" }`
-- Response: `User`
-- Lokalizacja kodu: `src/pages/AdminManagementPage.tsx:34-58`
+- Request: `{ email: string, name: string, role: "officer" | "admin", status: "active" | "inactive" }`
+- Response: `{ user: User, password: string }` (hasło wygenerowane na serwerze)
+- Lokalizacja kodu: `src/pages/AdminManagementPage.tsx:70-130`
+- Walidacja: Email unikalny, format email, wymagane pola
 
 **`PUT /api/users/officers/:id`** (admin)
 - Edycja danych urzędnika
-- Request: `Partial<User>`
+- Request: `{ name?: string, status?: "active" | "inactive", role?: "officer" | "admin" }`
 - Response: `User`
+- Lokalizacja kodu: `src/pages/AdminManagementPage.tsx:140-155`
 
 **`DELETE /api/users/officers/:id`** (admin)
 - Usunięcie konta urzędnika
 - Response: `{ success: boolean }`
-- Lokalizacja kodu: `src/pages/AdminManagementPage.tsx:92-96`
+- Lokalizacja kodu: `src/pages/AdminManagementPage.tsx:180-195`
+
+**`POST /api/users/officers/:id/reset-password`** (admin)
+- Zresetowanie hasła urzędnika
+- Response: `{ password: string }` (nowe hasło)
+- Lokalizacja kodu: `src/pages/AdminManagementPage.tsx:220-240`
 
 ### 📋 Akty Prawne
 
@@ -240,11 +256,42 @@ VITE_APP_NAME=4Night - Radar Legislacyjny
 
 ## Notatki dla Developera
 
+### Admin Panel (AdminManagementPage)
+- **Lokalizacja**: `/admin-zarzadzanie`
+- **Dostęp**: Tylko dla ról `admin`
+- **Funkcje**:
+  - Dodawanie nowych urzędników/administratorów
+  - Edytowanie danych (nazwa, rola, status)
+  - Usuwanie kont
+  - Wyszukiwanie real-time po email/nazwisko
+  - Filtrowanie po statusie (aktywni/nieaktywni)
+  - Kopiowanie do schowka (email, hasło)
+  - Wyświetlanie statystyk
+  - Tabela z kolumnami: Email, Nazwa, Rola, Status, Data Utworzenia, Akcje
+
+### Generowanie Haseł
+- Hasła są generowane na frontendzie w trybie testowym
+- Format: 12 znaków, mieszanka A-Z, a-z, 0-9, !@#$%
+- Na produkcji: Backend powinien generować hasła bezpośrednio
+- Hasła powinny być wysyłane na email zaraz po utworzeniu
+
+### Logowanie (Header Component)
+- **Tabs**: Obywatel | Urzędnik | Administrator
+- Każda rola ma oddzielne pole logowania
+- Dynamiczny handleLogin na podstawie activeLoginTab
+- Wyświetlanie danych testowych dla każdej roli
+
+### Autentykacja
 1. **Mock Data**: Aktualnie aplikacja używa danych mock'owych z `src/data/mockData.ts`
-2. **Autentykacja**: AuthContext waliduje dane testowe. Przed podłączeniem backendu zakomentuj linię walidacji w `AuthContext.tsx:32-45` i odkomentuj sekcję z TODO
+2. **AuthContext**: Waliduje dane testowe. Przed podłączeniem backendu zakomentuj linię walidacji w `AuthContext.tsx:32-45` i odkomentuj sekcję z TODO
 3. **Token Storage**: Token powinien być przechowywany w `localStorage` pod kluczem `token`
 4. **CORS**: Backend powinien obsługiwać CORS dla developmentu
 5. **Błędy**: Użyj biblioteki `sonner` do wyświetlania notyfikacji (już zaimplementowana)
+
+### Role-Based Access Control (RBAC)
+- **citizen**: `/`, `/wszystkie`, `/akt/:id`, `/kategoria/:id`, `/obywatel`
+- **officer**: citizen routes + `/edytor`, `/moje-projekty`
+- **admin**: officer routes + `/admin-zarzadzanie`
 
 ## TODO - Integracja Backendu
 
@@ -253,11 +300,15 @@ VITE_APP_NAME=4Night - Radar Legislacyjny
 - [ ] Podłączenie API do tworzenia/edycji aktów
 - [ ] Podłączenie API do komentarzy
 - [ ] Podłączenie API do subskrypcji
-- [ ] Podłączenie API do zarządzania kontami
+- [ ] Podłączenie API do zarządzania kontami (GET, POST, PUT, DELETE, password reset)
+- [ ] Migracja danych testowych do bazy danych
 - [ ] Implementacja refresh tokena
 - [ ] Handling błędów API
 - [ ] Optimistic updates
 - [ ] Caching responses
+- [ ] Email notifications na utworzenie nowego konta
+- [ ] Audit logging dla akcji admina
+- [ ] 2FA/MFA dla administratorów
 
 ## Build i Deployment
 
