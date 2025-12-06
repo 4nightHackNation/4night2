@@ -336,6 +336,34 @@ export const sampleActs: LegislativeAct[] = [
       iiReading: { for: 275, against: 140, abstain: 25 },
     },
   },
+  {
+    id: "PL_2025_007",
+    title: "Projekt ustawy o wspieraniu mobilności osób niepełnosprawnych",
+    summary: "Ustawa wprowadza nowe ulgi i dofinansowania dla osób niepełnosprawnych korzystających z transportu publicznego oraz indywidualnego. Projekt zakłada również modernizację infrastruktury dostępności w miastach.",
+    status: "procedowany",
+    progress: "w_toku",
+    category: "transport",
+    tags: ["społeczne", "transport", "osoby niepełnosprawne"],
+    priority: "high",
+    sponsor: "Minister Infrastruktury",
+    dateSubmitted: "2025-05-01",
+    lastUpdated: "2025-11-30",
+    kadencja: "X",
+    currentStage: 5,
+    hasConsultation: true,
+    consultationStart: "2025-11-15",
+    consultationEnd: "2025-12-20",
+    stages: [
+      { id: "s1", name: "Projekt został przyjęty do prac rady ministrów", date: "2025-05-01", status: "done" },
+      { id: "s2", name: "Zgłoszenia lobbingowe", date: "2025-05-10", status: "done" },
+      { id: "s3", name: "Konsultacje publiczne", date: "2025-11-15", status: "in_progress" },
+      { id: "s4", name: "Opiniowanie", date: null, status: "pending" },
+      { id: "s5", name: "Rada Ministrów", date: null, status: "pending" },
+    ],
+    versions: [
+      { id: "v1", version: 1, date: "2025-05-01", type: "projekt", url: "/docs/PL_2025_007_v1.pdf" },
+    ],
+  },
 ];
 
 // Featured acts for homepage

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Search, User, LogOut, Menu, X, Plus, Minus, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccessibility } from "@/contexts/AccessibilityContext";
 import { sampleActs } from "@/data/mockData";
+import { TEST_ACCOUNTS } from "@/data/testData";
 import { cn } from "@/lib/utils";
 
 export function Header() {
@@ -27,6 +29,9 @@ export function Header() {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [citizenEmail, setCitizenEmail] = useState("");
+  const [citizenPassword, setCitizenPassword] = useState("");
+  const [activeLoginTab, setActiveLoginTab] = useState("citizen");
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -45,11 +50,20 @@ export function Header() {
   };
 
   const handleLogin = async () => {
-    const success = await login(loginEmail, loginPassword);
+    const success = await login(loginEmail, loginPassword, "officer");
     if (success) {
       setLoginDialogOpen(false);
       setLoginEmail("");
       setLoginPassword("");
+    }
+  };
+
+  const handleCitizenLogin = async () => {
+    const success = await login(citizenEmail, citizenPassword, "citizen");
+    if (success) {
+      setLoginDialogOpen(false);
+      setCitizenEmail("");
+      setCitizenPassword("");
     }
   };
 
@@ -159,13 +173,30 @@ export function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <Link to="/edytor">Nowy akt</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/moje-subskrypcje">Moje subskrypcje</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  {user?.role === "citizen" && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/obywatel">Mój profil</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  {(user?.role === "officer" || user?.role === "admin") && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/moje-projekty">Moje Projekty</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/edytor">Nowy akt</Link>
+                      </DropdownMenuItem>
+                      {user?.role === "admin" && (
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin-zarzadzanie">Zarządzanie kontami</Link>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
                   <DropdownMenuItem onClick={logout} className="text-destructive">
                     <LogOut className="h-4 w-4 mr-2" />
                     Wyloguj
@@ -184,46 +215,105 @@ export function Header() {
                   <DialogHeader>
                     <DialogTitle className="text-xl">Logowanie</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4 pt-4">
-                    {/* Demo account info */}
-                    <div className="bg-muted p-3 rounded-lg border border-border">
-                      <p className="text-sm font-medium text-foreground mb-1">🔑 Konto demo:</p>
-                      <p className="text-xs text-muted-foreground">Email: <span className="font-mono bg-background px-1 rounded">demo@gov.pl</span></p>
-                      <p className="text-xs text-muted-foreground">Hasło: <span className="font-mono bg-background px-1 rounded">demo123</span></p>
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium mb-2">
-                        Adres e-mail
-                      </label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        placeholder="demo@gov.pl"
-                        className="h-12"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="password" className="block text-sm font-medium mb-2">
-                        Hasło
-                      </label>
-                      <Input
-                        id="password"
-                        type="password"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        placeholder="demo123"
-                        className="h-12"
-                      />
-                    </div>
-                    <Button onClick={handleLogin} className="w-full h-12 bg-primary hover:bg-gov-navy-dark">
-                      Zaloguj się
-                    </Button>
-                    <p className="text-xs text-muted-foreground text-center">
-                      Logowanie przeznaczone dla pracowników administracji publicznej
-                    </p>
+                  <div className="pt-4">
+                    <Tabs value={activeLoginTab} onValueChange={setActiveLoginTab} className="w-full">
+                      <TabsList className="grid w-full grid-cols-2 mb-4">
+                        <TabsTrigger value="officer">Urzędnik</TabsTrigger>
+                        <TabsTrigger value="citizen">Obywatel</TabsTrigger>
+                      </TabsList>
+
+                      {/* Officer Login Tab */}
+                      <TabsContent value="officer" className="space-y-4">
+                        <div className="bg-muted p-3 rounded-lg border border-border space-y-2">
+                          <div>
+                            <p className="text-sm font-medium text-foreground mb-1">🔑 Konto Urzędnika:</p>
+                            <p className="text-xs text-muted-foreground">Email: <span className="font-mono bg-background px-1 rounded">{TEST_ACCOUNTS.officer.email}</span></p>
+                            <p className="text-xs text-muted-foreground">Hasło: <span className="font-mono bg-background px-1 rounded">{TEST_ACCOUNTS.officer.password}</span></p>
+                          </div>
+                          <div className="pt-2 border-t border-border">
+                            <p className="text-sm font-medium text-foreground mb-1">👨‍💼 Konto Admina:</p>
+                            <p className="text-xs text-muted-foreground">Email: <span className="font-mono bg-background px-1 rounded">{TEST_ACCOUNTS.admin.email}</span></p>
+                            <p className="text-xs text-muted-foreground">Hasło: <span className="font-mono bg-background px-1 rounded">{TEST_ACCOUNTS.admin.password}</span></p>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="officer-email" className="block text-sm font-medium mb-2">
+                            Adres e-mail
+                          </label>
+                          <Input
+                            id="officer-email"
+                            type="email"
+                            value={loginEmail}
+                            onChange={(e) => setLoginEmail(e.target.value)}
+                            placeholder={TEST_ACCOUNTS.officer.email}
+                            className="h-12"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="officer-password" className="block text-sm font-medium mb-2">
+                            Hasło
+                          </label>
+                          <Input
+                            id="officer-password"
+                            type="password"
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            placeholder={TEST_ACCOUNTS.officer.password}
+                            className="h-12"
+                          />
+                        </div>
+                        <Button onClick={handleLogin} className="w-full h-12 bg-primary hover:bg-gov-navy-dark">
+                          Zaloguj się
+                        </Button>
+                        <p className="text-xs text-muted-foreground text-center">
+                          Logowanie dla pracowników administracji publicznej i administratorów
+                        </p>
+                      </TabsContent>
+
+                      {/* Citizen Login Tab */}
+                      <TabsContent value="citizen" className="space-y-4">
+                        <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                          <p className="text-sm font-medium text-blue-900 mb-1">🔑 Konto testowe obywatela:</p>
+                          <p className="text-xs text-blue-700">Email: <span className="font-mono bg-white px-1 rounded">{TEST_ACCOUNTS.citizen.email}</span></p>
+                          <p className="text-xs text-blue-700">Hasło: <span className="font-mono bg-white px-1 rounded">{TEST_ACCOUNTS.citizen.password}</span></p>
+                          <p className="text-xs text-blue-600 mt-2">Sekcja dla obywateli i organizacji pozarządowych</p>
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="citizen-email" className="block text-sm font-medium mb-2">
+                            Adres e-mail
+                          </label>
+                          <Input
+                            id="citizen-email"
+                            type="email"
+                            value={citizenEmail}
+                            onChange={(e) => setCitizenEmail(e.target.value)}
+                            placeholder={TEST_ACCOUNTS.citizen.email}
+                            className="h-12"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="citizen-password" className="block text-sm font-medium mb-2">
+                            Hasło
+                          </label>
+                          <Input
+                            id="citizen-password"
+                            type="password"
+                            value={citizenPassword}
+                            onChange={(e) => setCitizenPassword(e.target.value)}
+                            placeholder={TEST_ACCOUNTS.citizen.password}
+                            className="h-12"
+                          />
+                        </div>
+                        <Button onClick={handleCitizenLogin} className="w-full h-12 bg-primary hover:bg-primary/90">
+                          Zaloguj się
+                        </Button>
+                        <p className="text-xs text-muted-foreground text-center">
+                          Logowanie dla obywateli, organizacji pozarządowych i zainteresowanych stron
+                        </p>
+                      </TabsContent>
+                    </Tabs>
                   </div>
                 </DialogContent>
               </Dialog>

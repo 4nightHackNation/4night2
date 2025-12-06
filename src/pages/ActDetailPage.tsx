@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { ChevronRight, Download, Bell, BellOff, FileText, Calendar, User, Tag, ExternalLink } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { LegislativeTimeline } from "@/components/acts/LegislativeTimeline";
+import { ActComments } from "@/components/acts/ActComments";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -181,6 +182,14 @@ export default function ActDetailPage() {
                 >
                   Wersje dokumentu
                 </TabsTrigger>
+                {act.hasConsultation && (
+                  <TabsTrigger
+                    value="comments"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-4"
+                  >
+                    Konsultacje publiczne
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <div className="p-6">
@@ -238,6 +247,14 @@ export default function ActDetailPage() {
                       </div>
                     ))}
                   </div>
+                </TabsContent>
+
+                <TabsContent value="comments" className="mt-0">
+                  <ActComments
+                    actId={act.id}
+                    hasConsultation={act.hasConsultation}
+                    consultationEnd={act.consultationEnd}
+                  />
                 </TabsContent>
               </div>
             </Tabs>
