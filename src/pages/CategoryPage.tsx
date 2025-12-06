@@ -103,7 +103,7 @@ export default function CategoryPage() {
             </div>
             <Button
               variant="outline"
-              className={`border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10 ${
+              className={`bg-primary-foreground/20 ${
                 subscribed ? "bg-primary-foreground/20" : ""
               }`}
               onClick={handleSubscribe}
