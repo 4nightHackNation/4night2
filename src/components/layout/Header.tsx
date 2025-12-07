@@ -209,7 +209,7 @@ export function Header() {
                   {user?.role === "citizen" && (
                     <>
                       <DropdownMenuItem asChild>
-                        <Link to="/obywatel">Mój profil</Link>
+                        <Link to="/obywatel">{t("header.myprofile")}</Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                     </>
@@ -217,15 +217,17 @@ export function Header() {
                   {(user?.role === "officer" || user?.role === "admin") && (
                     <>
                       <DropdownMenuItem asChild>
-                        <Link to="/moje-projekty">Moje Projekty</Link>
+                        <Link to="/moje-projekty">
+                          {t("header.myprojects")}
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/edytor">Nowy akt</Link>
+                        <Link to="/edytor">{t("header.newact")}</Link>
                       </DropdownMenuItem>
                       {user?.role === "admin" && (
                         <DropdownMenuItem asChild>
                           <Link to="/admin-zarzadzanie">
-                            Zarządzanie kontami
+                            {t("header.account_management")}
                           </Link>
                         </DropdownMenuItem>
                       )}
@@ -237,7 +239,7 @@ export function Header() {
                     className="text-destructive"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Wyloguj
+                    {t("auth.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -254,7 +256,9 @@ export function Header() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle className="text-xl">Logowanie</DialogTitle>
+                    <DialogTitle className="text-xl">
+                      {t("header.login_title")}
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="pt-4">
                     <Tabs
@@ -263,9 +267,15 @@ export function Header() {
                       className="w-full"
                     >
                       <TabsList className="grid w-full grid-cols-3 mb-4">
-                        <TabsTrigger value="officer">Urzędnik</TabsTrigger>
-                        <TabsTrigger value="admin">Administrator</TabsTrigger>
-                        <TabsTrigger value="citizen">Obywatel</TabsTrigger>
+                        <TabsTrigger value="officer">
+                          {t("header.login_officer")}
+                        </TabsTrigger>
+                        <TabsTrigger value="admin">
+                          {t("header.login_admin")}
+                        </TabsTrigger>
+                        <TabsTrigger value="citizen">
+                          {t("header.login_citizen")}
+                        </TabsTrigger>
                       </TabsList>
 
                       {/* Officer Login Tab */}
@@ -273,16 +283,16 @@ export function Header() {
                         <div className="bg-muted p-3 rounded-lg border border-border space-y-2">
                           <div>
                             <p className="text-sm font-medium text-foreground mb-1">
-                              🔑 Konto Urzędnika:
+                              {t("header.login_officer_account")}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              Email:{" "}
+                              {t("header.login_email")}:{" "}
                               <span className="font-mono bg-background px-1 rounded">
                                 {TEST_ACCOUNTS.officer.email}
                               </span>
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              Hasło:{" "}
+                              {t("header.login_password")}:{" "}
                               <span className="font-mono bg-background px-1 rounded">
                                 {TEST_ACCOUNTS.officer.password}
                               </span>
@@ -295,7 +305,7 @@ export function Header() {
                             htmlFor="officer-email"
                             className="block text-sm font-medium mb-2"
                           >
-                            Adres e-mail
+                            {t("header.login_email")}
                           </label>
                           <Input
                             id="officer-email"
@@ -311,7 +321,7 @@ export function Header() {
                             htmlFor="officer-password"
                             className="block text-sm font-medium mb-2"
                           >
-                            Hasło
+                            {t("header.login_password")}
                           </label>
                           <Input
                             id="officer-password"
@@ -326,10 +336,10 @@ export function Header() {
                           onClick={handleLogin}
                           className="w-full h-12 bg-primary hover:bg-gov-navy-dark"
                         >
-                          Zaloguj się
+                          {t("auth.login")}
                         </Button>
                         <p className="text-xs text-muted-foreground text-center">
-                          Logowanie dla pracowników administracji publicznej
+                          {t("header.login_officer_description_secondary")}
                         </p>
                       </TabsContent>
 
@@ -337,22 +347,22 @@ export function Header() {
                       <TabsContent value="admin" className="space-y-4">
                         <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
                           <p className="text-sm font-medium text-amber-900 mb-1">
-                            👨‍💼 Konto Administratora:
+                            {t("header.login_admin_account")}
                           </p>
                           <p className="text-xs text-amber-700">
-                            Email:{" "}
+                            {t("header.login_email")}{" "}
                             <span className="font-mono bg-white px-1 rounded">
                               {TEST_ACCOUNTS.admin.email}
                             </span>
                           </p>
                           <p className="text-xs text-amber-700">
-                            Hasło:{" "}
+                            {t("header.login_password")}{" "}
                             <span className="font-mono bg-white px-1 rounded">
                               {TEST_ACCOUNTS.admin.password}
                             </span>
                           </p>
                           <p className="text-xs text-amber-600 mt-2">
-                            Sekcja dla administratorów systemu
+                            {t("header.login_admin_description")}
                           </p>
                         </div>
 
@@ -361,7 +371,7 @@ export function Header() {
                             htmlFor="admin-email"
                             className="block text-sm font-medium mb-2"
                           >
-                            Adres e-mail
+                            {t("header.login_email")}
                           </label>
                           <Input
                             id="admin-email"
@@ -377,7 +387,7 @@ export function Header() {
                             htmlFor="admin-password"
                             className="block text-sm font-medium mb-2"
                           >
-                            Hasło
+                            {t("header.login_password")}
                           </label>
                           <Input
                             id="admin-password"
@@ -392,10 +402,10 @@ export function Header() {
                           onClick={handleLogin}
                           className="w-full h-12 bg-amber-600 hover:bg-amber-700"
                         >
-                          Zaloguj się
+                          {t("auth.login")}
                         </Button>
                         <p className="text-xs text-muted-foreground text-center">
-                          Logowanie dla administratorów systemu
+                          {t("header.login_admin_description_secondary")}
                         </p>
                       </TabsContent>
 
@@ -403,22 +413,22 @@ export function Header() {
                       <TabsContent value="citizen" className="space-y-4">
                         <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                           <p className="text-sm font-medium text-blue-900 mb-1">
-                            🔑 Konto testowe obywatela:
+                            {t("header.login_citizen_account")}
                           </p>
                           <p className="text-xs text-blue-700">
-                            Email:{" "}
+                            {t("header.login_email")}{" "}
                             <span className="font-mono bg-white px-1 rounded">
                               {TEST_ACCOUNTS.citizen.email}
                             </span>
                           </p>
                           <p className="text-xs text-blue-700">
-                            Hasło:{" "}
+                            {t("header.login_password")}{" "}
                             <span className="font-mono bg-white px-1 rounded">
                               {TEST_ACCOUNTS.citizen.password}
                             </span>
                           </p>
                           <p className="text-xs text-blue-600 mt-2">
-                            Sekcja dla obywateli i organizacji pozarządowych
+                            {t("header.login_citizen_description")}
                           </p>
                         </div>
 
@@ -427,7 +437,7 @@ export function Header() {
                             htmlFor="citizen-email"
                             className="block text-sm font-medium mb-2"
                           >
-                            Adres e-mail
+                            {t("header.login_email")}
                           </label>
                           <Input
                             id="citizen-email"
@@ -443,7 +453,7 @@ export function Header() {
                             htmlFor="citizen-password"
                             className="block text-sm font-medium mb-2"
                           >
-                            Hasło
+                            {t("header.login_password")}
                           </label>
                           <Input
                             id="citizen-password"
@@ -458,11 +468,10 @@ export function Header() {
                           onClick={handleCitizenLogin}
                           className="w-full h-12 bg-primary hover:bg-primary/90"
                         >
-                          Zaloguj się
+                          {t("auth.login")}
                         </Button>
                         <p className="text-xs text-muted-foreground text-center">
-                          Logowanie dla obywateli, organizacji pozarządowych i
-                          zainteresowanych stron
+                          {t("header.login_citizen_description_secondary")}
                         </p>
                       </TabsContent>
                     </Tabs>

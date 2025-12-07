@@ -6,14 +6,18 @@ interface User {
   email: string;
   name: string;
   role: "admin" | "officer" | "citizen";
-  subscriptions?: string[]; // Array of category IDs or act IDs
+  subscriptions?: string[];
   createdAt?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string, role: "admin" | "officer" | "citizen") => Promise<boolean>;
+  login: (
+    email: string,
+    password: string,
+    role: "admin" | "officer" | "citizen"
+  ) => Promise<boolean>;
   logout: () => void;
   updateSubscriptions: (subscriptions: string[]) => void;
 }
@@ -26,7 +30,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const login = async (email: string, password: string, role: "admin" | "officer" | "citizen"): Promise<boolean> => {
+  const login = async (
+    email: string,
+    password: string,
+    role: "admin" | "officer" | "citizen"
+  ): Promise<boolean> => {
     // Validate credentials against test data
     let testAccount = null;
 
@@ -39,7 +47,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // Check credentials
-    if (testAccount && email === testAccount.email && password === testAccount.password) {
+    if (
+      testAccount &&
+      email === testAccount.email &&
+      password === testAccount.password
+    ) {
       const mockUser: User = {
         id: Math.random().toString(36).substr(2, 9),
         email,
@@ -97,7 +109,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, updateSubscriptions }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        login,
+        logout,
+        updateSubscriptions,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

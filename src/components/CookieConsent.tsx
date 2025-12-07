@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useCookieConsent } from "@/contexts/CookieConsentContext";
 
 export function CookieConsent() {
@@ -36,29 +44,51 @@ export function CookieConsent() {
           <AlertDialogTitle>Polityka Ciasteczek</AlertDialogTitle>
           <AlertDialogDescription className="text-base mt-4 space-y-4">
             <div>
-              <p className="font-semibold text-foreground mb-2">Używamy ciasteczek, aby:</p>
+              <p className="font-semibold text-foreground mb-2">
+                Używamy ciasteczek, aby:
+              </p>
               <ul className="list-disc list-inside space-y-2 text-sm">
-                <li><strong>Utrzymać sesję logowania</strong> - ciasteczka sesji przechowują token autoryzacji, umożliwiając Ci pozostanie zalogowanym</li>
-                <li><strong>Zapamiętać Twoje preferencje</strong> - np. tryb dostępności (rozmiar czcionki, wysoki kontrast), wybrane kategorie i ustawienia wyświetlania</li>
-                <li><strong>Analityka</strong> - anonimowe dane o użytkowaniu strony, aby poprawiać jej funkcjonalność</li>
+                <li>
+                  <strong>Utrzymać sesję logowania</strong> - ciasteczka sesji
+                  przechowują token autoryzacji, umożliwiając Ci pozostanie
+                  zalogowanym
+                </li>
+                <li>
+                  <strong>Zapamiętać Twoje preferencje</strong> - np. tryb
+                  dostępności (rozmiar czcionki, wysoki kontrast), wybrane
+                  kategorie i ustawienia wyświetlania
+                </li>
+                <li>
+                  <strong>Analityka</strong> - anonimowe dane o użytkowaniu
+                  strony, aby poprawiać jej funkcjonalność
+                </li>
               </ul>
             </div>
 
             <div className="bg-accent/50 p-3 rounded-md">
               <p className="text-sm">
-                <strong>Ciasteczka niezbędne:</strong> Są wymagane do prawidłowego działania strony i nie można ich wyłączyć (sesja logowania).
+                <strong>Ciasteczka niezbędne:</strong> Są wymagane do
+                prawidłowego działania strony i nie można ich wyłączyć (sesja
+                logowania).
               </p>
               <p className="text-sm mt-2">
-                <strong>Ciasteczka preferencji:</strong> Przechowują Twoje ustawienia dostępności i preferencje (rozmiar czcionki, kontrast, itp.).
+                <strong>Ciasteczka preferencji:</strong> Przechowują Twoje
+                ustawienia dostępności i preferencje (rozmiar czcionki,
+                kontrast, itp.).
               </p>
               <p className="text-sm mt-2">
-                <strong>Ciasteczka analityczne:</strong> Pomagają nam zrozumieć, jak używasz naszej strony.
+                <strong>Ciasteczka analityczne:</strong> Pomagają nam zrozumieć,
+                jak używasz naszej strony.
               </p>
             </div>
 
             <p className="text-xs text-muted-foreground">
               Szczegółowe informacje znajdują się w naszej{" "}
-              <a href="/polityka-prywatnosci" target="_blank" className="underline hover:text-foreground">
+              <a
+                href="/polityka-prywatnosci"
+                target="_blank"
+                className="underline hover:text-foreground"
+              >
                 Polityce Prywatności
               </a>
             </p>

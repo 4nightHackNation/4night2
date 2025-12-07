@@ -83,7 +83,10 @@ export function ActFilters({
                 {t("actfilters.title", "Tytuł")}
               </label>
               <Input
-                placeholder="Szukaj po tytule..."
+                placeholder={t(
+                  "actfilters.search_placeholder",
+                  "Szukaj po tytule..."
+                )}
                 value={filters.title}
                 onChange={(e) => onFilterChange("title", e.target.value)}
                 className="h-11"

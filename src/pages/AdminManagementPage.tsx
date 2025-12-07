@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, Edit2, CheckCircle, XCircle, Copy, RefreshCw, Eye, EyeOff } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Edit2,
+  CheckCircle,
+  XCircle,
+  Copy,
+  RefreshCw,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +40,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface OfficerAccount {
   id: string;
@@ -44,7 +55,8 @@ interface OfficerAccount {
 
 // Utility function to generate random password
 const generatePassword = (length: number = 12): string => {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
   let password = "";
   for (let i = 0; i < length; i++) {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -66,6 +78,9 @@ export default function AdminManagementPage() {
       createdBy: "System",
     },
   ]);
+
+  const statusKey =
+    status === "active" ? "status.activated" : "status.deactivated";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -89,6 +104,8 @@ export default function AdminManagementPage() {
     setEditingId(null);
   };
 
+  const { t } = useTranslation("common"); // lub inny namespace, którego używasz
+
   const handleGeneratePassword = () => {
     setFormData({ ...formData, password: generatePassword() });
   };
@@ -96,18 +113,18 @@ export default function AdminManagementPage() {
   const handleCopyCredentials = (officer: OfficerAccount) => {
     const credentials = `Email: ${officer.email}\nHasło: ${officer.password}`;
     navigator.clipboard.writeText(credentials);
-    toast.success("Dane logowania skopiowane do schowka");
+    toast.success(t("admin.copy_credentials_success"));
   };
 
   const handleAddOfficer = () => {
     if (!formData.email || !formData.name || !formData.password) {
-      toast.error("Uzupełnij wszystkie pola");
+      toast.error(t("errors.fill_all_fields"));
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      toast.error("Podaj prawidłowy adres email");
+      toast.error(t("errors.invalid_email"));
       return;
     }
 
@@ -126,12 +143,12 @@ export default function AdminManagementPage() {
             : officer
         )
       );
-      toast.success("Konto urzędnika zostało zaktualizowane");
+      toast.success(t("admin.update_success"));
     } else {
       // Add new officer
       const emailExists = officers.some((o) => o.email === formData.email);
       if (emailExists) {
-        toast.error("Konto z tym adresem email już istnieje");
+        toast.error(t("admin.email_exists"));
         return;
       }
 
@@ -147,7 +164,7 @@ export default function AdminManagementPage() {
       };
 
       setOfficers([...officers, newOfficer]);
-      toast.success("Konto urzędnika zostało dodane");
+      toast.success(t("admin.add_success"));
     }
 
     resetForm();
@@ -157,7 +174,7 @@ export default function AdminManagementPage() {
   const handleDeleteOfficer = (id: string) => {
     setOfficers(officers.filter((officer) => officer.id !== id));
     setDeleteId(null);
-    toast.success("Konto zostało usunięte");
+    toast.success(t("admin.delete_success"));
   };
 
   const handleEditOfficer = (officer: OfficerAccount) => {
@@ -199,9 +216,11 @@ export default function AdminManagementPage() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Zarządzanie kontami</h1>
+            <h1 className="text-3xl font-bold mb-2">
+              {t("admin.manage_accounts")}
+            </h1>
             <p className="text-muted-foreground">
-              Administracja kontami urzędników i administratorów
+              {t("admin.manage_accounts_description")}
             </p>
           </div>
           <Dialog
@@ -214,18 +233,23 @@ export default function AdminManagementPage() {
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
-                Dodaj konto urzędnika
+                {t("admin.add_officer")}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>
-                  {editingId ? "Edytuj konto urzędnika" : "Dodaj nowe konto urzędnika"}
+                  {editingId
+                    ? t("admin.edit_officer_account")
+                    : t("admin.add_new_officer_account")}
                 </DialogTitle>
               </DialogHeader>
+
               <div className="space-y-4 pt-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <label className="block text-sm font-medium mb-2">
+                    {t("header.login_email")}
+                  </label>
                   <Input
                     type="email"
                     value={formData.email}
@@ -237,7 +261,9 @@ export default function AdminManagementPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Nazwa</label>
+                  <label className="block text-sm font-medium mb-2">
+                    {t("admin.new_officer_name")}
+                  </label>
                   <Input
                     value={formData.name}
                     onChange={(e) =>
@@ -248,7 +274,9 @@ export default function AdminManagementPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Hasło</label>
+                  <label className="block text-sm font-medium mb-2">
+                    {t("header.login_password")}
+                  </label>
                   <div className="flex gap-2">
                     <div className="flex-1 relative">
                       <Input
@@ -289,7 +317,9 @@ export default function AdminManagementPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Rola</label>
+                  <label className="block text-sm font-medium mb-2">
+                    {t("admin.new_officer_role_translation")}
+                  </label>
                   <Select
                     value={formData.role}
                     onValueChange={(value) =>
@@ -303,13 +333,19 @@ export default function AdminManagementPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="officer">Urzędnik</SelectItem>
-                      <SelectItem value="admin">Administrator</SelectItem>
+                      <SelectItem value="officer">
+                        {t("admin.new_role_officer")}
+                      </SelectItem>
+                      <SelectItem value="admin">
+                        {t("admin.new_role_admin")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <Button onClick={handleAddOfficer} className="w-full">
-                  {editingId ? "Zaktualizuj konto" : "Dodaj konto"}
+                  {editingId
+                    ? t("admin.update_account")
+                    : t("admin.add_account")}
                 </Button>
               </div>
             </DialogContent>
@@ -346,9 +382,7 @@ export default function AdminManagementPage() {
                 <div className="text-3xl font-bold text-red-600">
                   {officers.filter((o) => o.status === "inactive").length}
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Nieaktywne
-                </p>
+                <p className="text-sm text-muted-foreground mt-2">Nieaktywne</p>
               </div>
             </CardContent>
           </Card>
@@ -440,11 +474,9 @@ export default function AdminManagementPage() {
                                 )
                               );
                               toast.success(
-                                `Konto ${
-                                  newStatus === "active"
-                                    ? "aktywowane"
-                                    : "deaktywowane"
-                                }`
+                                t("admin.account_status_changed", {
+                                  status: t(statusKey),
+                                })
                               );
                             }}
                             className="flex items-center gap-2 text-sm hover:opacity-70 transition-opacity"
@@ -508,8 +540,8 @@ export default function AdminManagementPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Usunąć konto?</AlertDialogTitle>
               <AlertDialogDescription>
-                Czy jesteś pewny? Ta akcja nie może być cofnięta. Konto urzędnika
-                zostanie trwale usunięte.
+                Czy jesteś pewny? Ta akcja nie może być cofnięta. Konto
+                urzędnika zostanie trwale usunięte.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="flex gap-4">
