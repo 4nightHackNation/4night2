@@ -10,6 +10,19 @@ import { sampleActs, categories } from "@/data/mockData";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { API_ENDPOINTS, apiGet } from "@/config/api";
+import { format } from "date-fns";
+import { pl } from "date-fns/locale";
+
+// Helper do formatowania dat
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return "-";
+  try {
+    const date = new Date(dateString);
+    return format(date, "d MMMM yyyy, HH:mm", { locale: pl });
+  } catch {
+    return dateString;
+  }
+};
 
 function getProgressBadge(progress: string) {
   switch (progress) {
@@ -185,7 +198,7 @@ export default function ActDetailPage() {
                   <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-xs text-muted-foreground">Data złożenia</p>
-                    <p className="font-medium">{act.dateSubmitted}</p>
+                    <p className="font-medium">{formatDate(act.dateSubmitted)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -199,7 +212,7 @@ export default function ActDetailPage() {
                   <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-xs text-muted-foreground">Ostatnia aktualizacja</p>
-                    <p className="font-medium">{act.lastUpdated}</p>
+                    <p className="font-medium">{formatDate(act.lastUpdated)}</p>
                   </div>
                 </div>
               </div>
@@ -245,7 +258,7 @@ export default function ActDetailPage() {
                     <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                       <h4 className="font-semibold mb-2">Konsultacje publiczne</h4>
                       <p className="text-sm text-muted-foreground">
-                        Okres konsultacji: {act.consultationStart} - {act.consultationEnd}
+                        Okres konsultacji: {formatDate(act.consultationStart)} - {formatDate(act.consultationEnd)}
                       </p>
                     </div>
                   )}
@@ -267,13 +280,13 @@ export default function ActDetailPage() {
 
                 <TabsContent value="timeline" className="mt-0">
                   <h3 className="text-lg font-semibold mb-6">Przebieg prac legislacyjnych</h3>
-                  <LegislativeTimeline stages={act.stages} />
+                  <LegislativeTimeline stages={Array.isArray(act.stages) ? act.stages : []} />
                 </TabsContent>
 
                 <TabsContent value="versions" className="mt-0">
                   <h3 className="text-lg font-semibold mb-4">Historia wersji dokumentu</h3>
                   <div className="space-y-3">
-                    {act.versions.map((version) => (
+                    {act.versions?.map((version: any) => (
                       <div
                         key={version.id}
                         className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
@@ -282,14 +295,14 @@ export default function ActDetailPage() {
                           <p className="font-medium">
                             Wersja {version.version} - {version.type}
                           </p>
-                          <p className="text-sm text-muted-foreground">{version.date}</p>
+                          <p className="text-sm text-muted-foreground">{formatDate(version.date)}</p>
                         </div>
                         <Button variant="outline" size="sm" onClick={handleDownload}>
                           <Download className="h-4 w-4 mr-2" />
                           Pobierz
                         </Button>
                       </div>
-                    ))}
+                    )) || <p className="text-muted-foreground">Brak wersji</p>}
                   </div>
                 </TabsContent>
 
@@ -313,19 +326,25 @@ export default function ActDetailPage() {
                 Tagi
               </h3>
               <div className="flex flex-wrap gap-2">
-                {act.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-sm">
-                    {tag.replace(/_/g, " ")}
-                  </Badge>
-                ))}
+                {act.tags?.length > 0 ? (
+                  Array.isArray(act.tags) 
+                    ? act.tags.map((tag: any) => (
+                        <Badge key={tag} variant="secondary" className="text-sm">
+                          {typeof tag === 'string' ? tag.replace(/_/g, " ") : String(tag)}
+                        </Badge>
+                      ))
+                    : <p className="text-sm text-muted-foreground">Tags nie są array</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Brak tagów</p>
+                )}
               </div>
             </div>
 
             {/* Quick timeline */}
             <div className="gov-card">
               <h3 className="font-semibold mb-4">Etapy procesu</h3>
-              <LegislativeTimeline stages={act.stages.slice(0, 6)} compact />
-              {act.stages.length > 6 && (
+              <LegislativeTimeline stages={Array.isArray(act.stages) ? act.stages.slice(0, 6) : []} compact />
+              {Array.isArray(act.stages) && act.stages.length > 6 && (
                 <p className="text-sm text-muted-foreground mt-4 text-center">
                   +{act.stages.length - 6} więcej etapów
                 </p>

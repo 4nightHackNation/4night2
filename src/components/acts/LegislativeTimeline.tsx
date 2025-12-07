@@ -1,5 +1,7 @@
 import { Check, Clock, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { pl } from "date-fns/locale";
 
 interface Stage {
   id: string;
@@ -12,6 +14,16 @@ interface LegislativeTimelineProps {
   stages: Stage[];
   compact?: boolean;
 }
+
+const formatDate = (dateString: string | null | undefined) => {
+  if (!dateString) return "";
+  try {
+    const date = new Date(dateString);
+    return format(date, "d MMMM yyyy, HH:mm", { locale: pl });
+  } catch {
+    return dateString;
+  }
+};
 
 export function LegislativeTimeline({ stages, compact = false }: LegislativeTimelineProps) {
   return (
@@ -58,7 +70,7 @@ export function LegislativeTimeline({ stages, compact = false }: LegislativeTime
             </p>
             {stage.date && (
               <p className={cn("text-muted-foreground", compact ? "text-xs" : "text-sm")}>
-                {stage.date}
+                {formatDate(stage.date)}
               </p>
             )}
           </div>
