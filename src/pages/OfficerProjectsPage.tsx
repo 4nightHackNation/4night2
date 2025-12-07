@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { sampleActs } from "@/data/mockData";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { API_ENDPOINTS, apiGet } from "@/config/api";
+import { API_ENDPOINTS, apiGet, API_URL } from "@/config/api";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 
@@ -110,9 +110,27 @@ export default function OfficerProjectsPage() {
     archiwalny: t("progress.archiwalny"),
   };
 
-  const handleDelete = (id: string) => {
-    setProjects(projects.filter((p) => p.id !== id));
-    toast.success(t("officer.toast.project_deleted"));
+  const handleDelete = async (id: string) => {
+    if (!window.confirm(t("officer.confirm.delete_project") || "Czy na pewno chcesz usunąć ten projekt?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_URL}${API_ENDPOINTS.ACTS.DELETE(id)}`,
+        { method: "DELETE" }
+      );
+
+      if (response.ok) {
+        setProjects(projects.filter((p) => p.id !== id));
+        toast.success(t("officer.toast.project_deleted"));
+      } else {
+        toast.error(t("officer.toast.delete_failed") || "Nie udało się usunąć projektu");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error(t("officer.toast.delete_failed") || "Błąd przy usuwaniu projektu");
+    }
   };
 
   return (
@@ -251,34 +269,24 @@ export default function OfficerProjectsPage() {
                         {t("officer.timeline.stage_label")}
                       </p>
                       {(() => {
-                        const stageCount = Array.isArray(project.stages)
-                          ? project.stages.length
-                          : 0;
-                        const currentStageNumber =
-                          typeof project.currentStage === "number"
-                            ? project.currentStage
-                            : 0;
-                        const progressPct = stageCount
-                          ? Math.min(
-                              100,
-                              Math.max(
-                                0,
-                                (currentStageNumber / stageCount) * 100
-                              )
-                            )
-                          : 0;
+                        const stages = Array.isArray(project.stages) ? project.stages : [];
+                        const currentStageIndex = Math.max(
+                          0,
+                          Math.min(
+                            typeof project.currentStage === "number"
+                              ? project.currentStage - 1
+                              : 0,
+                            stages.length - 1
+                          )
+                        );
+                        const currentStage = stages[currentStageIndex];
+                        const currentStageName =
+                          currentStage?.name || currentStage?.title || "Brak etapu";
+
                         return (
-                          <>
-                            <p className="font-semibold">
-                              {currentStageNumber} / {stageCount}
-                            </p>
-                            <div className="w-full bg-muted rounded-full h-2 mt-2">
-                              <div
-                                className="bg-primary h-2 rounded-full"
-                                style={{ width: `${progressPct}%` }}
-                              />
-                            </div>
-                          </>
+                          <p className="font-semibold text-sm leading-relaxed">
+                            {currentStageName}
+                          </p>
                         );
                       })()}
                       <p className="text-xs text-muted-foreground mt-2">

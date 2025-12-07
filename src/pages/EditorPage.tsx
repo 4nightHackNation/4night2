@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { ChevronRight, Save, Plus, Trash2 } from "lucide-react";
+import { ChevronRight, Save, Plus, Trash2, Upload, Sparkles } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,142 +14,234 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  categories,
-  sponsors,
-  filterOptions,
-  legislativeStages,
-} from "@/data/mockData";
+import { filterOptions } from "@/data/mockData";
+
+const LEGISLATIVE_STAGES = [
+  "Projekt został przyjęty do prac rady ministrów",
+  "Zgłoszenia lobbingowe",
+  "Uzgodnienia",
+  "Konsultacje publiczne",
+  "Opiniowanie",
+  "Komitet Rady Ministrów do Spraw Cyfryzacji",
+  "Komitet do Spraw Europejskich",
+  "Komitet Społeczny Rady Ministrów",
+  "Komitet Ekonomiczny Rady Ministrów",
+  "Stały Komitet Rady Ministrów",
+  "Komisja Prawnicza",
+  "Potwierdzenie projektu przez Stały Komitet Rady Ministrów",
+  "Rada Ministrów",
+  "Notyfikacja",
+  "Skierowanie projektu ustawy do Sejmu",
+  "Wpłynięcie projektu do Sejmu",
+  "I czytanie na posiedzeniu Sejmu",
+  "Praca w komisjach po I czytaniu",
+  "Sprawozdanie komisji po I czytaniu",
+  "II czytanie na posiedzeniu Sejmu",
+  "Praca w komisjach po II czytaniu",
+  "Sprawozdanie komisji po II czytaniu",
+  "III czytanie na posiedzeniu Sejmu",
+  "Głosowanie w Sejmie",
+  "Przekazanie ustawy Prezydentowi i Marszałkowi Senatu",
+  "Wpłynięcie ustawy do Prezydenta",
+  "Wpłynięcie ustawy do Marszałka Senatu",
+  "Skierowanie ustawy do Komisji Senackich",
+  "Rozpatrzenie ustawy przez Komisje Senackie",
+  "Rozpatrzenie ustawy przez Senat",
+  "Przekazanie uchwały do Sejmu",
+  "Wpłynięcie do Sejmu stanowisko Senatu",
+  "Praca w komisjach nad stanowiskiem Senatu",
+  "Sprawozdanie komisji",
+  "Rozpatrywanie na forum Sejmu stanowiska Senatu",
+  "Przekazanie Ustawy Prezydentowi do podpisu",
+  "Podpisanie przez Prezydenta Ustawy",
+  "Przekazanie Ustawy do dziennika ustaw",
+];
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { API_ENDPOINTS, apiGet } from "@/config/api";
+import {
+  API_ENDPOINTS,
+  apiGet,
+  apiPost,
+  apiPut,
+  apiDelete,
+  apiUploadFile,
+} from "@/config/api";
 
 type StatusType =
   | "planowany"
   | "procedowany"
   | "uchwalony"
   | "odrzucony"
-  | "wycofany";
+  | "wycofany"
+  | "draft";
 type PriorityType = "low" | "normal" | "high";
 
-interface FormState {
+interface Tag {
+  id: number;
+  name: string;
+}
+
+interface ActVersion {
   id: string;
+  versionNumber: number;
+  date: string;
+  type: string;
+  filePath: string;
+}
+
+interface ActStage {
+  id: string;
+  name: string;
+  date: string;
+  status: string;
+  order: number;
+}
+
+interface ReadingVote {
+  id: string;
+  readingName: string;
+  for: number;
+  against: number;
+  abstain: number;
+  date: string | null;
+}
+
+interface CreateActFormState {
   title: string;
-  summary: string;
-  pdfFile: File | null;
+  plainLanguageSummary: string;
   status: StatusType;
-  category: string;
-  tags: string[];
   priority: PriorityType;
   sponsor: string;
+  kadencja: string;
+  currentStage: number;
   hasConsultation: boolean;
   consultationStart: string;
   consultationEnd: string;
-  urgency: string;
+  tagIds: number[];
 }
 
 export default function EditorPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, user } = useAuth();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const { t } = useTranslation("common");
   const searchParams = new URLSearchParams(location.search);
-  const actId = searchParams.get("actId");
+  const actIdParam = searchParams.get("actId");
 
-  const [formData, setFormData] = useState<FormState>({
-    id: `PL_2025_${String(Math.floor(Math.random() * 900) + 100)}`,
+  const [createdActId, setCreatedActId] = useState<string | null>(actIdParam);
+  const [isCreating, setIsCreating] = useState(!actIdParam);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loadingTags, setLoadingTags] = useState(false);
+  const [loadingAct, setLoadingAct] = useState(false);
+  const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [pdfFiles, setPdfFiles] = useState<Record<string, File>>({});
+
+  const [formData, setFormData] = useState<CreateActFormState>({
     title: "",
-    summary: "",
-    pdfFile: null,
-    status: "planowany",
-    category: "",
-    tags: [],
+    plainLanguageSummary: "",
+    status: "draft",
     priority: "normal",
     sponsor: "",
+    kadencja: "",
+    currentStage: 0,
     hasConsultation: false,
     consultationStart: "",
     consultationEnd: "",
-    urgency: "normal",
+    tagIds: [],
   });
 
-  const [stages, setStages] = useState([
-    {
-      id: "s1",
-      name: "Projekt został przyjęty do prac rady ministrów",
-      date: "",
-      status: "pending" as const,
-    },
-  ]);
+  const [versions, setVersions] = useState<ActVersion[]>([]);
+  const [stages, setStages] = useState<ActStage[]>([]);
+  const [readingVotes, setReadingVotes] = useState<ReadingVote[]>([]);
 
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [, setLoadingAct] = useState(false);
-
-  // Prefill when editing existing act
+  // Load tags
   useEffect(() => {
-    if (!actId) return;
-    setLoadingAct(true);
-    apiGet(API_ENDPOINTS.ACTS.DETAIL_WITH_DETAILS(actId))
+    setLoadingTags(true);
+    apiGet(API_ENDPOINTS.TAGS.LIST)
       .then(async (res) => {
         if (!res.ok) return;
         const data = await res.json();
-        const safeTags = Array.isArray(data.tags)
-          ? data.tags.map((tag: any) => (typeof tag === "string" ? tag : String(tag)))
-          : [];
-        const safeStages = Array.isArray(data.stages)
-          ? data.stages.map((s: any, idx: number) => ({
-              id: s.id?.toString() ?? `s${idx + 1}`,
-              name: s.name ?? "",
-              date: s.date ?? "",
-              status: (s.status as "pending" | "in_progress" | "completed") ?? "pending",
-            }))
-          : [
-              {
-                id: "s1",
-                name: "Projekt został przyjęty do prac rady ministrów",
-                date: "",
-                status: "pending" as const,
-              },
-            ];
+        setTags(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        toast.error("Nie udało się załadować tagów");
+      })
+      .finally(() => setLoadingTags(false));
+  }, []);
 
-        setFormData((prev) => ({
-          ...prev,
-          id: data.id ?? actId,
+  // Load act data when editing
+  useEffect(() => {
+    if (!actIdParam) return;
+    setLoadingAct(true);
+    apiGet(API_ENDPOINTS.ACTS.DETAIL_WITH_DETAILS(actIdParam))
+      .then(async (res) => {
+        if (!res.ok) {
+          toast.error("Nie udało się załadować aktu");
+          return;
+        }
+        const data = await res.json();
+        
+        setFormData({
           title: data.title ?? "",
-          summary: data.summary ?? data.description ?? "",
-          status: (data.status as StatusType) ?? "planowany",
-          category: data.category ?? "",
-          tags: safeTags,
+          plainLanguageSummary: data.plainLanguageSummary ?? "",
+          status: (data.status as StatusType) ?? "draft",
           priority: (data.priority as PriorityType) ?? "normal",
           sponsor: data.sponsor ?? "",
-          hasConsultation: Boolean(data.consultationStart || data.consultationEnd),
-          consultationStart: data.consultationStart ?? "",
-          consultationEnd: data.consultationEnd ?? "",
-          urgency: data.urgency ?? "normal",
-          pdfFile: null,
-        }));
-        setStages(safeStages);
+          kadencja: data.kadencja ?? "",
+          currentStage: data.currentStage ?? 0,
+          hasConsultation: Boolean(data.hasConsultation),
+          consultationStart: data.consultationStart
+            ? new Date(data.consultationStart).toISOString().split("T")[0]
+            : "",
+          consultationEnd: data.consultationEnd
+            ? new Date(data.consultationEnd).toISOString().split("T")[0]
+            : "",
+          tagIds: Array.isArray(data.tags)
+            ? data.tags.map((tag: any) => (typeof tag === "object" ? tag.id : Number(tag)))
+            : [],
+        });
+
+        // Load versions, stages, reading votes
+        if (Array.isArray(data.versions)) {
+          setVersions(
+            data.versions.map((v: any) => ({
+              id: v.id,
+              versionNumber: v.versionNumber ?? 1,
+              date: v.date ? new Date(v.date).toISOString().split("T")[0] : "",
+              type: v.type ?? "",
+              filePath: v.filePath ?? "",
+            }))
+          );
+        }
+        if (Array.isArray(data.stages)) {
+          setStages(
+            data.stages.map((s: any) => ({
+              id: s.id,
+              name: s.name ?? "",
+              date: s.date ? new Date(s.date).toISOString().split("T")[0] : "",
+              status: s.status ?? "planned",
+              order: s.order ?? 0,
+            }))
+          );
+        }
+        if (Array.isArray(data.readingVotes)) {
+          setReadingVotes(
+            data.readingVotes.map((v: any) => ({
+              id: v.id,
+              readingName: v.readingName ?? "",
+              for: v.for ?? 0,
+              against: v.against ?? 0,
+              abstain: v.abstain ?? 0,
+              date: v.date ? new Date(v.date).toISOString().split("T")[0] : null,
+            }))
+          );
+        }
       })
       .finally(() => setLoadingAct(false));
-  }, [actId]);
-
-  const isEditing = Boolean(actId);
-
-  // create/revoke preview URL
-  useEffect(() => {
-    if (!formData.pdfFile) {
-      setPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(formData.pdfFile);
-    setPreviewUrl(url);
-    return () => {
-      URL.revokeObjectURL(url);
-      setPreviewUrl(null);
-    };
-  }, [formData.pdfFile]);
+  }, [actIdParam]);
 
   if (
     !isAuthenticated ||
@@ -171,91 +263,413 @@ export default function EditorPage() {
     );
   }
 
-  const handleChange = (
-    field: keyof FormState,
-    value: string | boolean | File | null | StatusType | PriorityType | string[]
+  const handleFormChange = (
+    field: keyof CreateActFormState,
+    value: string | boolean | number | number[]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // validate file: MIME + extension
-  const isPdfFile = (file: File | null) => {
-    if (!file) return false;
-    const okMime = file.type === "application/pdf";
-    const okExt = file.name.toLowerCase().endsWith(".pdf");
-    return okMime || okExt;
+  const handleCreateAct = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.title || !formData.sponsor || !formData.kadencja) {
+      toast.error("Uzupełnij wymagane pola", {
+        description: "Tytuł, sponsor i kadencja są wymagane.",
+      });
+      return;
+    }
+
+    try {
+      const payload = {
+        title: formData.title,
+        plainLanguageSummary: formData.plainLanguageSummary,
+        status: formData.status,
+        priority: formData.priority,
+        sponsor: formData.sponsor,
+        kadencja: formData.kadencja,
+        currentStage: formData.currentStage,
+        hasConsultation: formData.hasConsultation,
+        consultationStart: formData.consultationStart
+          ? new Date(formData.consultationStart).toISOString()
+          : null,
+        consultationEnd: formData.consultationEnd
+          ? new Date(formData.consultationEnd).toISOString()
+          : null,
+        tagIds: formData.tagIds,
+      };
+
+      const res = await apiPost(API_ENDPOINTS.ACTS.CREATE, payload);
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: "Błąd serwera" }));
+        toast.error("Nie udało się utworzyć aktu", {
+          description: error.message || "Spróbuj ponownie",
+        });
+        return;
+      }
+
+      const createdAct = await res.json();
+      const newActId = createdAct.id;
+      setCreatedActId(newActId);
+      setIsCreating(false);
+      toast.success("Akt został utworzony", {
+        description: `ID: ${newActId}`,
+      });
+      
+      // Update URL without navigation
+      const newUrl = `${window.location.pathname}?actId=${newActId}`;
+      window.history.pushState({}, "", newUrl);
+    } catch (error) {
+      toast.error("Wystąpił błąd podczas tworzenia aktu");
+    }
   };
 
-  // file change handler with size limit (10MB) and validation
-  const onPdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
+  const handleUpdateAct = async () => {
+    if (!createdActId) return;
 
+    try {
+      const payload = {
+        title: formData.title,
+        plainLanguageSummary: formData.plainLanguageSummary,
+        status: formData.status,
+        priority: formData.priority,
+        sponsor: formData.sponsor,
+        kadencja: formData.kadencja,
+        currentStage: formData.currentStage,
+        hasConsultation: formData.hasConsultation,
+        consultationStart: formData.consultationStart
+          ? new Date(formData.consultationStart).toISOString()
+          : null,
+        consultationEnd: formData.consultationEnd
+          ? new Date(formData.consultationEnd).toISOString()
+          : null,
+        tagIds: formData.tagIds,
+      };
+
+      const res = await apiPut(API_ENDPOINTS.ACTS.UPDATE(createdActId), payload);
+      if (!res.ok) {
+        toast.error("Nie udało się zaktualizować aktu");
+        return;
+      }
+
+      toast.success("Akt został zaktualizowany");
+    } catch (error) {
+      toast.error("Wystąpił błąd podczas aktualizacji aktu");
+    }
+  };
+
+  const handleAddVersion = async () => {
+    if (!createdActId) {
+      toast.error("Najpierw utwórz akt");
+      return;
+    }
+
+    const newVersion: Partial<ActVersion> = {
+      versionNumber: versions.length + 1,
+      date: new Date().toISOString().split("T")[0],
+      type: "draft",
+      filePath: "",
+    };
+
+    try {
+      const payload = {
+        versionNumber: newVersion.versionNumber!,
+        date: new Date(newVersion.date!).toISOString(),
+        type: newVersion.type!,
+        filePath: newVersion.filePath!,
+      };
+
+      const res = await apiPost(
+        API_ENDPOINTS.VERSIONS.CREATE(createdActId),
+        payload
+      );
+      if (!res.ok) {
+        toast.error("Nie udało się dodać wersji");
+        return;
+      }
+
+      const created = await res.json();
+      setVersions([
+        ...versions,
+        {
+          id: created.id,
+          versionNumber: created.versionNumber,
+          date: new Date(created.date).toISOString().split("T")[0],
+          type: created.type,
+          filePath: created.filePath,
+        },
+      ]);
+      toast.success("Wersja została dodana");
+    } catch (error) {
+      toast.error("Wystąpił błąd podczas dodawania wersji");
+    }
+  };
+
+  const handleAddStage = async () => {
+    if (!createdActId) {
+      toast.error("Najpierw utwórz akt");
+      return;
+    }
+
+    const newStage: Partial<ActStage> = {
+      name: "",
+      date: new Date().toISOString().split("T")[0],
+      status: "planned",
+      order: 0,
+    };
+
+    try {
+      const payload = {
+        name: newStage.name!,
+        date: new Date(newStage.date!).toISOString(),
+        status: newStage.status!,
+        order: 0,
+      };
+
+      const res = await apiPost(
+        API_ENDPOINTS.STAGES.CREATE(createdActId),
+        payload
+      );
+      if (!res.ok) {
+        toast.error("Nie udało się dodać etapu");
+        return;
+      }
+
+      const created = await res.json();
+      setStages([
+        ...stages,
+        {
+          id: created.id,
+          name: created.name,
+          date: new Date(created.date).toISOString().split("T")[0],
+          status: created.status,
+          order: created.order,
+        },
+      ]);
+      toast.success("Etap został dodany");
+    } catch (error) {
+      toast.error("Wystąpił błąd podczas dodawania etapu");
+    }
+  };
+
+  const handleAddReadingVote = async () => {
+    if (!createdActId) {
+      toast.error("Najpierw utwórz akt");
+      return;
+    }
+
+    const newVote: Partial<ReadingVote> = {
+      readingName: "",
+      for: 0,
+      against: 0,
+      abstain: 0,
+      date: null,
+    };
+
+    try {
+      const payload = {
+        readingName: newVote.readingName!,
+        for: newVote.for!,
+        against: newVote.against!,
+        abstain: newVote.abstain!,
+        date: newVote.date ? new Date(newVote.date).toISOString() : null,
+      };
+
+      const res = await apiPost(
+        API_ENDPOINTS.READING_VOTES.CREATE(createdActId),
+        payload
+      );
+      if (!res.ok) {
+        toast.error("Nie udało się dodać głosowania");
+        return;
+      }
+
+      const created = await res.json();
+      setReadingVotes([
+        ...readingVotes,
+        {
+          id: created.id,
+          readingName: created.readingName,
+          for: created.for,
+          against: created.against,
+          abstain: created.abstain,
+          date: created.date
+            ? new Date(created.date).toISOString().split("T")[0]
+            : null,
+        },
+      ]);
+      toast.success("Głosowanie zostało dodane");
+    } catch (error) {
+      toast.error("Wystąpił błąd podczas dodawania głosowania");
+    }
+  };
+
+  const handleUploadPdf = async (versionId: string) => {
+    const pdfFile = pdfFiles[versionId];
+    if (!pdfFile || !createdActId) {
+      toast.error("Wybierz plik PDF");
+      return;
+    }
+
+    try {
+      console.log("Uploading PDF:", {
+        actId: createdActId,
+        versionId,
+        fileName: pdfFile.name,
+        fileSize: pdfFile.size,
+        endpoint: API_ENDPOINTS.VERSIONS.UPLOAD_PDF(createdActId, versionId),
+      });
+
+      const res = await apiUploadFile(
+        API_ENDPOINTS.VERSIONS.UPLOAD_PDF(createdActId, versionId),
+        pdfFile
+      );
+
+      console.log("Upload response:", {
+        status: res.status,
+        statusText: res.statusText,
+        ok: res.ok,
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => "Nieznany błąd");
+        toast.error("Nie udało się przesłać pliku PDF", {
+          description: errorText,
+        });
+        return;
+      }
+
+      // Backend zwraca NoContent (204) po udanym uploadzie
+      // Pobierz zaktualizowaną wersję z serwera
+      try {
+        // Czekaj chwilę, aby backend zdążył zapisać plik
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        
+        const versionRes = await apiGet(
+          API_ENDPOINTS.VERSIONS.DETAIL(createdActId, versionId)
+        );
+        console.log("Version detail response:", {
+          status: versionRes.status,
+          ok: versionRes.ok,
+        });
+        
+        if (versionRes.ok) {
+          const updatedVersion = await versionRes.json();
+          console.log("Updated version from server:", updatedVersion);
+          const newFilePath = updatedVersion.filePath;
+          
+          if (newFilePath) {
+            setVersions(
+              versions.map((v) =>
+                v.id === versionId
+                  ? {
+                      ...v,
+                      filePath: newFilePath,
+                    }
+                  : v
+              )
+            );
+            console.log("Set filePath to:", newFilePath);
+          } else {
+            // Jeśli backend nie zwrócił filePath, ustaw jako "uploaded" aby pokazać przycisk
+            console.log("No filePath in response, using 'uploaded' as fallback");
+            setVersions(
+              versions.map((v) =>
+                v.id === versionId ? { ...v, filePath: "uploaded" } : v
+              )
+            );
+          }
+        } else {
+          // Fallback - ustaw jako "uploaded" jeśli nie udało się pobrać
+          const errorText = await versionRes.text().catch(() => "");
+          console.log("Failed to fetch updated version:", errorText);
+          setVersions(
+            versions.map((v) =>
+              v.id === versionId ? { ...v, filePath: "uploaded" } : v
+            )
+          );
+        }
+      } catch (e) {
+        console.error("Error fetching updated version:", e);
+        // Fallback - ustaw jako "uploaded"
+        setVersions(
+          versions.map((v) =>
+            v.id === versionId ? { ...v, filePath: "uploaded" } : v
+          )
+        );
+      }
+
+      // Usuń plik z state
+      const newPdfFiles = { ...pdfFiles };
+      delete newPdfFiles[versionId];
+      setPdfFiles(newPdfFiles);
+
+      // Wyczyść input
+      const input = document.getElementById(`pdf-${versionId}`) as HTMLInputElement;
+      if (input) input.value = "";
+
+      toast.success("Plik PDF został przesłany");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Wystąpił błąd podczas przesyłania pliku", {
+        description: error instanceof Error ? error.message : "Nieznany błąd",
+      });
+    }
+  };
+
+  const handleGenerateSummary = async (versionId?: string) => {
+    if (!createdActId) {
+      toast.error("Najpierw utwórz akt");
+      return;
+    }
+
+    setGeneratingSummary(true);
+    try {
+      const endpoint = versionId
+        ? `${API_ENDPOINTS.EXPLANATIONS.GENERATE(createdActId)}?versionId=${versionId}`
+        : API_ENDPOINTS.EXPLANATIONS.GENERATE(createdActId);
+
+      // Use GET-like approach but with POST method and query params
+      const url = `${API_ENDPOINTS.EXPLANATIONS.GENERATE(createdActId)}${versionId ? `?versionId=${versionId}` : ''}`;
+      const res = await apiPost(url, {});
+      if (!res.ok) {
+        toast.error("Nie udało się wygenerować streszczenia");
+        return;
+      }
+
+      const summary = await res.text();
+      handleFormChange("plainLanguageSummary", summary);
+      toast.success("Streszczenie zostało wygenerowane");
+    } catch (error) {
+      toast.error("Wystąpił błąd podczas generowania streszczenia");
+    } finally {
+      setGeneratingSummary(false);
+    }
+  };
+
+  const onPdfChange = (e: React.ChangeEvent<HTMLInputElement>, versionId: string) => {
+    const file = e.target.files?.[0] ?? null;
     if (!file) {
-      handleChange("pdfFile", null);
+      const newPdfFiles = { ...pdfFiles };
+      delete newPdfFiles[versionId];
+      setPdfFiles(newPdfFiles);
       return;
     }
 
     const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
     if (file.size > MAX_BYTES) {
       toast.error("Plik jest za duży. Maksymalnie 10 MB.");
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      e.target.value = "";
       return;
     }
 
-    if (!isPdfFile(file)) {
+    if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
       toast.error("Wybrany plik nie jest plikiem PDF.");
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      e.target.value = "";
       return;
     }
 
-    handleChange("pdfFile", file);
-  };
-
-  const addStage = () => {
-    const newId = `s${stages.length + 1}`;
-    setStages([
-      ...stages,
-      { id: newId, name: "", date: "", status: "pending" },
-    ]);
-  };
-
-  const removeStage = (id: string) => {
-    if (stages.length > 1) setStages(stages.filter((s) => s.id !== id));
-  };
-
-  const updateStage = (id: string, field: string, value: string) => {
-    setStages(stages.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.title || !formData.category || !formData.sponsor) {
-      toast.error("Uzupełnij wymagane pola", {
-        description: "Tytuł, kategoria i wnioskodawca są wymagane.",
-      });
-      return;
-    }
-
-    const payload = new FormData();
-    payload.append("id", formData.id);
-    payload.append("title", formData.title);
-    payload.append("category", formData.category);
-    payload.append("status", formData.status);
-    payload.append("priority", formData.priority);
-    payload.append("sponsor", formData.sponsor);
-    payload.append("summary", formData.summary);
-    payload.append("hasConsultation", String(formData.hasConsultation));
-    if (formData.consultationStart)
-      payload.append("consultationStart", formData.consultationStart);
-    if (formData.consultationEnd)
-      payload.append("consultationEnd", formData.consultationEnd);
-    if (formData.pdfFile) payload.append("pdf", formData.pdfFile);
-
-    // fetch("/api/acts", { method: "POST", body: payload }) // uncomment and adapt
-
-    toast.success("Akt został zapisany", { description: `ID: ${formData.id}` });
-    navigate("/");
+    setPdfFiles({ ...pdfFiles, [versionId]: file });
   };
 
   return (
@@ -272,7 +686,7 @@ export default function EditorPage() {
             </Link>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
             <span className="text-foreground font-medium">
-              {isEditing ? "Edycja aktu" : t("editor.breadcrumb_new_act")}
+              {isCreating ? t("editor.breadcrumb_new_act") : "Edycja aktu"}
             </span>
           </nav>
         </div>
@@ -281,354 +695,1008 @@ export default function EditorPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl lg:text-3xl font-bold mb-8">
-            {isEditing ? "Edycja aktu prawnego" : t("editor.title_create_new_act")}
+            {isCreating
+              ? t("editor.title_create_new_act")
+              : "Edycja aktu prawnego"}
           </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Basic info */}
-            <div className="gov-card">
-              <h2 className="text-lg font-semibold mb-6">
-                {t("editor.basic.title")}
-              </h2>
+          {/* Create Act Form */}
+          {isCreating ? (
+            <form onSubmit={handleCreateAct} className="space-y-8">
+              <div className="gov-card">
+                <h2 className="text-lg font-semibold mb-6">
+                  {t("editor.basic.title")}
+                </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <Label htmlFor="title" className="text-base">
-                    {t("editor.fields.title.label")} *
-                  </Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => handleChange("title", e.target.value)}
-                    placeholder={t("editor.fields.title.placeholder")}
-                    className="mt-2 h-12"
-                    required
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <Label htmlFor="pdfFile" className="text-base">
-                    {t("editor.fields.pdf.label")}
-                  </Label>
-
-                  {/* custom upload: label changes border on hover, cursor pointer; input invisible overlay */}
-                  <div className="relative mt-2 group">
-                    <label
-                      htmlFor="pdfFile"
-                      className="
-            flex items-center justify-center h-12 px-4 rounded-md
-            border border-border
-            text-sm text-foreground
-            cursor-pointer
-            transition-colors duration-150
-            hover:border-primary
-            group-hover:bg-primary
-            group-hover:text-primary-foreground
-            group-hover:border-primary
-          "
-                    >
-                      {t("editor.fields.pdf.choose_file")}
-                    </label>
-
-                    <input
-                      id="pdfFile"
-                      ref={fileInputRef}
-                      type="file"
-                      accept="application/pdf"
-                      onChange={onPdfChange}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2">
+                    <Label htmlFor="title" className="text-base">
+                      Tytuł *
+                    </Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => handleFormChange("title", e.target.value)}
+                      placeholder="Wprowadź tytuł aktu"
+                      className="mt-2 h-12"
+                      required
                     />
                   </div>
 
-                  <div className="mt-2">
-                    <Button type="button" variant="outline" size="sm">
-                      {t("editor.fields.pdf.ogup_ai")}
-                    </Button>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="plainLanguageSummary" className="text-base">
+                      Streszczenie w prostym języku
+                    </Label>
+                    <Textarea
+                      id="plainLanguageSummary"
+                      value={formData.plainLanguageSummary}
+                      onChange={(e) =>
+                        handleFormChange("plainLanguageSummary", e.target.value)
+                      }
+                      placeholder="Wprowadź streszczenie"
+                      className="mt-2 min-h-[120px]"
+                    />
                   </div>
 
-                  {formData.pdfFile ? (
-                    <div className="mt-2">
-                      <p className="text-sm text-muted-foreground">
-                        {t("editor.fields.pdf.selected")}:{" "}
-                        {formData.pdfFile.name} —{" "}
-                        {Math.round(formData.pdfFile.size / 1024)} KB
-                      </p>
+                  <div>
+                    <Label htmlFor="status" className="text-base">
+                      Status
+                    </Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(v) =>
+                        handleFormChange("status", v as StatusType)
+                      }
+                    >
+                      <SelectTrigger className="mt-2 h-12">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filterOptions.status.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {t(`status.${opt.value}`, opt.label)}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="draft">Draft</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                      <div className="flex items-center gap-3 mt-2">
-                        {previewUrl && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => window.open(previewUrl, "_blank")}
-                          >
-                            {t("editor.fields.pdf.open_preview")}
-                          </Button>
-                        )}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => {
-                            if (fileInputRef.current)
-                              fileInputRef.current.value = "";
-                            handleChange("pdfFile", null);
-                          }}
-                        >
-                          {t("editor.fields.pdf.remove_file")}
-                        </Button>
-                      </div>
-                    </div>
+                  <div>
+                    <Label htmlFor="priority" className="text-base">
+                      Priorytet
+                    </Label>
+                    <Select
+                      value={formData.priority}
+                      onValueChange={(v) =>
+                        handleFormChange("priority", v as PriorityType)
+                      }
+                    >
+                      <SelectTrigger className="mt-2 h-12">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">{t("priority.low")}</SelectItem>
+                        <SelectItem value="normal">
+                          {t("priority.normal")}
+                        </SelectItem>
+                        <SelectItem value="high">{t("priority.high")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="sponsor" className="text-base">
+                      Sponsor *
+                    </Label>
+                    <Input
+                      id="sponsor"
+                      value={formData.sponsor}
+                      onChange={(e) => handleFormChange("sponsor", e.target.value)}
+                      placeholder="Wprowadź sponsora"
+                      className="mt-2 h-12"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="kadencja" className="text-base">
+                      Kadencja *
+                    </Label>
+                    <Input
+                      id="kadencja"
+                      value={formData.kadencja}
+                      onChange={(e) => handleFormChange("kadencja", e.target.value)}
+                      placeholder="np. X"
+                      className="mt-2 h-12"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="currentStage" className="text-base">
+                      Obecny etap
+                    </Label>
+                    <Select
+                      value={
+                        formData.currentStage >= 0 &&
+                        formData.currentStage < LEGISLATIVE_STAGES.length
+                          ? LEGISLATIVE_STAGES[formData.currentStage]
+                          : ""
+                      }
+                      onValueChange={(v) => {
+                        const index = LEGISLATIVE_STAGES.indexOf(v);
+                        handleFormChange("currentStage", index >= 0 ? index : 0);
+                      }}
+                    >
+                      <SelectTrigger className="mt-2 h-12">
+                        <SelectValue placeholder="Wybierz obecny etap" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LEGISLATIVE_STAGES.map((stageName, index) => (
+                          <SelectItem key={index} value={stageName}>
+                            {stageName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Tags */}
+                <div className="mt-6">
+                  <Label className="text-base mb-2 block">Tagi</Label>
+                  {loadingTags ? (
+                    <p className="text-sm text-muted-foreground">Ładowanie tagów...</p>
                   ) : (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      {t("editor.fields.pdf.no_file")}
-                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {tags.map((tag) => (
+                        <div key={tag.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`tag-${tag.id}`}
+                            checked={formData.tagIds.includes(tag.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                handleFormChange("tagIds", [
+                                  ...formData.tagIds,
+                                  tag.id,
+                                ]);
+                              } else {
+                                handleFormChange(
+                                  "tagIds",
+                                  formData.tagIds.filter((id) => id !== tag.id)
+                                );
+                              }
+                            }}
+                          />
+                          <Label
+                            htmlFor={`tag-${tag.id}`}
+                            className="text-sm font-normal cursor-pointer"
+                          >
+                            {tag.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
-
-                <div className="md:col-span-2">
-                  <Label htmlFor="summary" className="text-base">
-                    {t("editor.fields.summary.label")}
-                  </Label>
-                  <Textarea
-                    id="summary"
-                    value={formData.summary}
-                    onChange={(e) => handleChange("summary", e.target.value)}
-                    placeholder={t("editor.fields.summary.placeholder")}
-                    className="mt-2 min-h-[120px]"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="category" className="text-base">
-                    {t("editor.fields.category.label")} *
-                  </Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(v) => handleChange("category", v)}
-                  >
-                    <SelectTrigger className="mt-2 h-12">
-                      <SelectValue
-                        placeholder={t("editor.select.category_placeholder")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="sponsor" className="text-base">
-                    {t("editor.fields.sponsor.label")} *
-                  </Label>
-                  <Select
-                    value={formData.sponsor}
-                    onValueChange={(v) => handleChange("sponsor", v)}
-                  >
-                    <SelectTrigger className="mt-2 h-12">
-                      <SelectValue
-                        placeholder={t("editor.select.sponsor_placeholder")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sponsors.map((sponsor) => (
-                        <SelectItem key={sponsor} value={sponsor}>
-                          {sponsor}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="status" className="text-base">
-                    {t("editor.fields.status.label")}
-                  </Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(v) => handleChange("status", v)}
-                  >
-                    <SelectTrigger className="mt-2 h-12">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filterOptions.status.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {t(`status.${opt.value}`, opt.label)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="priority" className="text-base">
-                    {t("editor.fields.priority.label")}
-                  </Label>
-                  <Select
-                    value={formData.priority}
-                    onValueChange={(v) => handleChange("priority", v)}
-                  >
-                    <SelectTrigger className="mt-2 h-12">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">{t("priority.low")}</SelectItem>
-                      <SelectItem value="normal">
-                        {t("priority.normal")}
-                      </SelectItem>
-                      <SelectItem value="high">{t("priority.high")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            {/* Consultations */}
-            <div className="gov-card">
-              <h2 className="text-lg font-semibold mb-6">
-                {t("editor.consultations.title")}
-              </h2>
-
-              <div className="flex items-center gap-4 mb-6">
-                <Switch
-                  id="hasConsultation"
-                  checked={formData.hasConsultation}
-                  onCheckedChange={(v) => handleChange("hasConsultation", v)}
-                />
-                <Label
-                  htmlFor="hasConsultation"
-                  className="text-base cursor-pointer"
-                >
-                  {t("editor.consultations.toggle_label")}
-                </Label>
               </div>
 
-              {formData.hasConsultation && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="consultationStart">
-                      {t("editor.consultations.start")}
-                    </Label>
-                    <Input
-                      id="consultationStart"
-                      type="date"
-                      value={formData.consultationStart}
-                      onChange={(e) =>
-                        handleChange("consultationStart", e.target.value)
-                      }
-                      className="mt-2 h-12"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="consultationEnd">
-                      {t("editor.consultations.end")}
-                    </Label>
-                    <Input
-                      id="consultationEnd"
-                      type="date"
-                      value={formData.consultationEnd}
-                      onChange={(e) =>
-                        handleChange("consultationEnd", e.target.value)
-                      }
-                      className="mt-2 h-12"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Stages */}
-            <div className="gov-card">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold">
-                  {t("editor.stages.title")}
+              {/* Consultations */}
+              <div className="gov-card">
+                <h2 className="text-lg font-semibold mb-6">
+                  {t("editor.consultations.title")}
                 </h2>
+
+                <div className="flex items-center gap-4 mb-6">
+                  <Switch
+                    id="hasConsultation"
+                    checked={formData.hasConsultation}
+                    onCheckedChange={(v) => handleFormChange("hasConsultation", v)}
+                  />
+                  <Label
+                    htmlFor="hasConsultation"
+                    className="text-base cursor-pointer"
+                  >
+                    {t("editor.consultations.toggle_label")}
+                  </Label>
+                </div>
+
+                {formData.hasConsultation && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="consultationStart">
+                        {t("editor.consultations.start")}
+                      </Label>
+                      <Input
+                        id="consultationStart"
+                        type="date"
+                        value={formData.consultationStart}
+                        onChange={(e) =>
+                          handleFormChange("consultationStart", e.target.value)
+                        }
+                        className="mt-2 h-12"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="consultationEnd">
+                        {t("editor.consultations.end")}
+                      </Label>
+                      <Input
+                        id="consultationEnd"
+                        type="date"
+                        value={formData.consultationEnd}
+                        onChange={(e) =>
+                          handleFormChange("consultationEnd", e.target.value)
+                        }
+                        className="mt-2 h-12"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-4">
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  onClick={addStage}
+                  onClick={() => navigate("/")}
                 >
-                  <Plus className="h-4 w-4 mr-2" />{" "}
-                  {t("editor.stages.add_stage")}
+                  {t("editor.actions.cancel")}
+                </Button>
+                <Button type="submit" className="bg-primary hover:bg-gov-navy-dark">
+                  <Save className="h-5 w-5 mr-2" /> Utwórz akt
                 </Button>
               </div>
+            </form>
+          ) : (
+            // Edit Act - After Creation
+            <div className="space-y-8">
+              {/* Basic Info - Editable */}
+              <div className="gov-card">
+                <h2 className="text-lg font-semibold mb-6">
+                  {t("editor.basic.title")}
+                </h2>
 
-              <div className="space-y-4">
-                {stages.map((stage, index) => (
-                  <div
-                    key={stage.id}
-                    className="flex items-start gap-4 p-4 border border-border rounded-lg"
-                  >
-                    <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center shrink-0 text-sm font-medium">
-                      {index + 1}
-                    </span>
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Select
-                        value={stage.name}
-                        onValueChange={(v) => updateStage(stage.id, "name", v)}
-                      >
-                        <SelectTrigger className="h-11">
-                          <SelectValue
-                            placeholder={t("editor.stages.select_placeholder")}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2">
+                    <Label htmlFor="title" className="text-base">
+                      Tytuł *
+                    </Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => handleFormChange("title", e.target.value)}
+                      className="mt-2 h-12"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Label htmlFor="plainLanguageSummary" className="text-base">
+                      Streszczenie w prostym języku
+                    </Label>
+                    <Textarea
+                      id="plainLanguageSummary"
+                      value={formData.plainLanguageSummary}
+                      onChange={(e) =>
+                        handleFormChange("plainLanguageSummary", e.target.value)
+                      }
+                      className="mt-2 min-h-[120px]"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="status" className="text-base">
+                      Status
+                    </Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(v) =>
+                        handleFormChange("status", v as StatusType)
+                      }
+                    >
+                      <SelectTrigger className="mt-2 h-12">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filterOptions.status.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {t(`status.${opt.value}`, opt.label)}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="draft">Draft</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="priority" className="text-base">
+                      Priorytet
+                    </Label>
+                    <Select
+                      value={formData.priority}
+                      onValueChange={(v) =>
+                        handleFormChange("priority", v as PriorityType)
+                      }
+                    >
+                      <SelectTrigger className="mt-2 h-12">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">{t("priority.low")}</SelectItem>
+                        <SelectItem value="normal">
+                          {t("priority.normal")}
+                        </SelectItem>
+                        <SelectItem value="high">{t("priority.high")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="sponsor" className="text-base">
+                      Sponsor *
+                    </Label>
+                    <Input
+                      id="sponsor"
+                      value={formData.sponsor}
+                      onChange={(e) => handleFormChange("sponsor", e.target.value)}
+                      className="mt-2 h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="kadencja" className="text-base">
+                      Kadencja *
+                    </Label>
+                    <Input
+                      id="kadencja"
+                      value={formData.kadencja}
+                      onChange={(e) => handleFormChange("kadencja", e.target.value)}
+                      className="mt-2 h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="currentStage" className="text-base">
+                      Obecny etap
+                    </Label>
+                    <Select
+                      value={
+                        formData.currentStage >= 0 &&
+                        formData.currentStage < LEGISLATIVE_STAGES.length
+                          ? LEGISLATIVE_STAGES[formData.currentStage]
+                          : ""
+                      }
+                      onValueChange={(v) => {
+                        const index = LEGISLATIVE_STAGES.indexOf(v);
+                        handleFormChange("currentStage", index >= 0 ? index : 0);
+                      }}
+                    >
+                      <SelectTrigger className="mt-2 h-12">
+                        <SelectValue placeholder="Wybierz obecny etap" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LEGISLATIVE_STAGES.map((stageName, index) => (
+                          <SelectItem key={index} value={stageName}>
+                            {stageName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Tags */}
+                <div className="mt-6">
+                  <Label className="text-base mb-2 block">Tagi</Label>
+                  {loadingTags ? (
+                    <p className="text-sm text-muted-foreground">Ładowanie tagów...</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {tags.map((tag) => (
+                        <div key={tag.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`tag-${tag.id}`}
+                            checked={formData.tagIds.includes(tag.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                handleFormChange("tagIds", [
+                                  ...formData.tagIds,
+                                  tag.id,
+                                ]);
+                              } else {
+                                handleFormChange(
+                                  "tagIds",
+                                  formData.tagIds.filter((id) => id !== tag.id)
+                                );
+                              }
+                            }}
                           />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {legislativeStages.map((s) => (
-                            <SelectItem key={s} value={s}>
-                              {s}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <div className="flex gap-2">
-                        <Input
-                          type="date"
-                          value={stage.date}
-                          onChange={(e) =>
-                            updateStage(stage.id, "date", e.target.value)
-                          }
-                          className="h-11"
-                        />
-                        {stages.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-11 w-11 shrink-0 text-destructive hover:text-destructive"
-                            onClick={() => removeStage(stage.id)}
+                          <Label
+                            htmlFor={`tag-${tag.id}`}
+                            className="text-sm font-normal cursor-pointer"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
+                            {tag.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Consultations */}
+                <div className="mt-6">
+                  <h3 className="text-md font-semibold mb-4">
+                    {t("editor.consultations.title")}
+                  </h3>
+                  <div className="flex items-center gap-4 mb-6">
+                    <Switch
+                      id="hasConsultation"
+                      checked={formData.hasConsultation}
+                      onCheckedChange={(v) => handleFormChange("hasConsultation", v)}
+                    />
+                    <Label
+                      htmlFor="hasConsultation"
+                      className="text-base cursor-pointer"
+                    >
+                      {t("editor.consultations.toggle_label")}
+                    </Label>
+                  </div>
+
+                  {formData.hasConsultation && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="consultationStart">
+                          {t("editor.consultations.start")}
+                        </Label>
+                        <Input
+                          id="consultationStart"
+                          type="date"
+                          value={formData.consultationStart}
+                          onChange={(e) =>
+                            handleFormChange("consultationStart", e.target.value)
+                          }
+                          className="mt-2 h-12"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="consultationEnd">
+                          {t("editor.consultations.end")}
+                        </Label>
+                        <Input
+                          id="consultationEnd"
+                          type="date"
+                          value={formData.consultationEnd}
+                          onChange={(e) =>
+                            handleFormChange("consultationEnd", e.target.value)
+                          }
+                          className="mt-2 h-12"
+                        />
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  )}
+                </div>
 
-            {/* Actions */}
-            <div className="flex items-center justify-end gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/")}
-              >
-                {t("editor.actions.cancel")}
-              </Button>
-              <Button
-                type="submit"
-                className="bg-primary hover:bg-gov-navy-dark"
-              >
-                <Save className="h-5 w-5 mr-2" /> {t("editor.actions.save_act")}
-              </Button>
+                <div className="mt-6">
+                  <Button onClick={handleUpdateAct} variant="outline">
+                    <Save className="h-4 w-4 mr-2" /> Zapisz zmiany
+                  </Button>
+                </div>
+              </div>
+
+              {/* Versions Section */}
+              <div className="gov-card">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold">Wersje</h2>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddVersion}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Dodaj wersję
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  {versions.map((version) => (
+                    <div
+                      key={version.id}
+                      className="p-4 border border-border rounded-lg space-y-4"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label>Numer wersji</Label>
+                          <Input
+                            value={version.versionNumber}
+                            onChange={(e) =>
+                              setVersions(
+                                versions.map((v) =>
+                                  v.id === version.id
+                                    ? { ...v, versionNumber: parseInt(e.target.value) || 1 }
+                                    : v
+                                )
+                              )
+                            }
+                            type="number"
+                            className="mt-2"
+                          />
+                        </div>
+                        <div>
+                          <Label>Data</Label>
+                          <Input
+                            value={version.date}
+                            onChange={(e) =>
+                              setVersions(
+                                versions.map((v) =>
+                                  v.id === version.id ? { ...v, date: e.target.value } : v
+                                )
+                              )
+                            }
+                            type="date"
+                            className="mt-2"
+                          />
+                        </div>
+                        <div>
+                          <Label>Typ</Label>
+                          <Input
+                            value={version.type}
+                            onChange={(e) =>
+                              setVersions(
+                                versions.map((v) =>
+                                  v.id === version.id ? { ...v, type: e.target.value } : v
+                                )
+                              )
+                            }
+                            className="mt-2"
+                          />
+                        </div>
+                      </div>
+
+                      {/* PDF Upload for Version */}
+                      <div className="space-y-2">
+                        <Label>Dodaj PDF</Label>
+                        {version.filePath && version.filePath !== "" ? (
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">
+                              PDF został przesłany
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleGenerateSummary(version.id)}
+                              disabled={generatingSummary}
+                            >
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              {generatingSummary
+                                ? "Generowanie..."
+                                : "Wygeneruj streszczenie AI"}
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="flex gap-2 items-center">
+                              <input
+                                type="file"
+                                accept="application/pdf"
+                                onChange={(e) => onPdfChange(e, version.id)}
+                                className="hidden"
+                                id={`pdf-${version.id}`}
+                              />
+                              <label
+                                htmlFor={`pdf-${version.id}`}
+                                className="flex-1 cursor-pointer"
+                              >
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="w-full"
+                                  asChild
+                                >
+                                  <span>
+                                    <Upload className="h-4 w-4 mr-2 inline" /> Wybierz PDF
+                                  </span>
+                                </Button>
+                              </label>
+                              {pdfFiles[version.id] && (
+                                <Button
+                                  type="button"
+                                  onClick={() => handleUploadPdf(version.id)}
+                                >
+                                  Prześlij
+                                </Button>
+                              )}
+                            </div>
+                            {pdfFiles[version.id] && (
+                              <p className="text-sm text-muted-foreground">
+                                Wybrano: {pdfFiles[version.id].name} (
+                                {Math.round(pdfFiles[version.id].size / 1024)} KB)
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            if (!createdActId) return;
+                            try {
+                              const payload = {
+                                versionNumber: version.versionNumber,
+                                date: new Date(version.date).toISOString(),
+                                type: version.type,
+                                filePath: version.filePath,
+                              };
+                              const res = await apiPut(
+                                API_ENDPOINTS.VERSIONS.UPDATE(createdActId, version.id),
+                                payload
+                              );
+                              if (res.ok) {
+                                toast.success("Wersja została zaktualizowana");
+                              } else {
+                                toast.error("Nie udało się zaktualizować wersji");
+                              }
+                            } catch (error) {
+                              toast.error("Wystąpił błąd");
+                            }
+                          }}
+                        >
+                          <Save className="h-4 w-4 mr-2" /> Zapisz
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            if (!createdActId) return;
+                            try {
+                              const res = await apiDelete(
+                                API_ENDPOINTS.VERSIONS.DELETE(createdActId, version.id)
+                              );
+                              if (res.ok) {
+                                setVersions(versions.filter((v) => v.id !== version.id));
+                                toast.success("Wersja została usunięta");
+                              } else {
+                                toast.error("Nie udało się usunąć wersji");
+                              }
+                            } catch (error) {
+                              toast.error("Wystąpił błąd");
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" /> Usuń
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stages Section */}
+              <div className="gov-card">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold">Etapy</h2>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddStage}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Dodaj etap
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  {stages.map((stage) => (
+                    <div
+                      key={stage.id}
+                      className="p-4 border border-border rounded-lg space-y-4"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label>Nazwa</Label>
+                          <Select
+                            value={stage.name}
+                            onValueChange={(v) =>
+                              setStages(
+                                stages.map((s) =>
+                                  s.id === stage.id ? { ...s, name: v } : s
+                                )
+                              )
+                            }
+                          >
+                            <SelectTrigger className="mt-2">
+                              <SelectValue placeholder="Wybierz etap" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {LEGISLATIVE_STAGES.map((stageName) => (
+                                <SelectItem key={stageName} value={stageName}>
+                                  {stageName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>Data</Label>
+                          <Input
+                            value={stage.date}
+                            onChange={(e) =>
+                              setStages(
+                                stages.map((s) =>
+                                  s.id === stage.id ? { ...s, date: e.target.value } : s
+                                )
+                              )
+                            }
+                            type="date"
+                            className="mt-2"
+                          />
+                        </div>
+                        <div>
+                          <Label>Status</Label>
+                          <Select
+                            value={stage.status}
+                            onValueChange={(v) =>
+                              setStages(
+                                stages.map((s) =>
+                                  s.id === stage.id ? { ...s, status: v } : s
+                                )
+                              )
+                            }
+                          >
+                            <SelectTrigger className="mt-2">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="planned">Planowany</SelectItem>
+                              <SelectItem value="in_progress">W trakcie</SelectItem>
+                              <SelectItem value="completed">Zakończony</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            if (!createdActId) return;
+                            try {
+                              const payload = {
+                                name: stage.name,
+                                date: stage.date
+                                  ? new Date(stage.date).toISOString()
+                                  : new Date().toISOString(),
+                                status: stage.status,
+                                order: 0,
+                              };
+                              const res = await apiPut(
+                                API_ENDPOINTS.STAGES.UPDATE(createdActId, stage.id),
+                                payload
+                              );
+                              if (res.ok) {
+                                toast.success("Etap został zaktualizowany");
+                              } else {
+                                toast.error("Nie udało się zaktualizować etapu");
+                              }
+                            } catch (error) {
+                              toast.error("Wystąpił błąd");
+                            }
+                          }}
+                        >
+                          <Save className="h-4 w-4 mr-2" /> Zapisz
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            if (!createdActId) return;
+                            try {
+                              const res = await apiDelete(
+                                API_ENDPOINTS.STAGES.DELETE(createdActId, stage.id)
+                              );
+                              if (res.ok) {
+                                setStages(stages.filter((s) => s.id !== stage.id));
+                                toast.success("Etap został usunięty");
+                              } else {
+                                toast.error("Nie udało się usunąć etapu");
+                              }
+                            } catch (error) {
+                              toast.error("Wystąpił błąd");
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" /> Usuń
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Reading Votes Section */}
+              <div className="gov-card">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold">Głosowania</h2>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddReadingVote}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Dodaj głosowanie
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  {readingVotes.map((vote) => (
+                    <div
+                      key={vote.id}
+                      className="p-4 border border-border rounded-lg space-y-4"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label>Nazwa czytania</Label>
+                          <Input
+                            value={vote.readingName}
+                            onChange={(e) =>
+                              setReadingVotes(
+                                readingVotes.map((v) =>
+                                  v.id === vote.id
+                                    ? { ...v, readingName: e.target.value }
+                                    : v
+                                )
+                              )
+                            }
+                            className="mt-2"
+                          />
+                        </div>
+                        <div>
+                          <Label>Za</Label>
+                          <Input
+                            value={vote.for}
+                            onChange={(e) =>
+                              setReadingVotes(
+                                readingVotes.map((v) =>
+                                  v.id === vote.id
+                                    ? { ...v, for: parseInt(e.target.value) || 0 }
+                                    : v
+                                )
+                              )
+                            }
+                            type="number"
+                            className="mt-2"
+                          />
+                        </div>
+                        <div>
+                          <Label>Przeciw</Label>
+                          <Input
+                            value={vote.against}
+                            onChange={(e) =>
+                              setReadingVotes(
+                                readingVotes.map((v) =>
+                                  v.id === vote.id
+                                    ? { ...v, against: parseInt(e.target.value) || 0 }
+                                    : v
+                                )
+                              )
+                            }
+                            type="number"
+                            className="mt-2"
+                          />
+                        </div>
+                        <div>
+                          <Label>Wstrzymało się</Label>
+                          <Input
+                            value={vote.abstain}
+                            onChange={(e) =>
+                              setReadingVotes(
+                                readingVotes.map((v) =>
+                                  v.id === vote.id
+                                    ? { ...v, abstain: parseInt(e.target.value) || 0 }
+                                    : v
+                                )
+                              )
+                            }
+                            type="number"
+                            className="mt-2"
+                          />
+                        </div>
+                        <div>
+                          <Label>Data</Label>
+                          <Input
+                            value={vote.date || ""}
+                            onChange={(e) =>
+                              setReadingVotes(
+                                readingVotes.map((v) =>
+                                  v.id === vote.id ? { ...v, date: e.target.value } : v
+                                )
+                              )
+                            }
+                            type="date"
+                            className="mt-2"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            if (!createdActId) return;
+                            try {
+                              const payload = {
+                                readingName: vote.readingName,
+                                for: vote.for,
+                                against: vote.against,
+                                abstain: vote.abstain,
+                                date: vote.date
+                                  ? new Date(vote.date).toISOString()
+                                  : null,
+                              };
+                              const res = await apiPut(
+                                API_ENDPOINTS.READING_VOTES.UPDATE(
+                                  createdActId,
+                                  vote.id
+                                ),
+                                payload
+                              );
+                              if (res.ok) {
+                                toast.success("Głosowanie zostało zaktualizowane");
+                              } else {
+                                toast.error("Nie udało się zaktualizować głosowania");
+                              }
+                            } catch (error) {
+                              toast.error("Wystąpił błąd");
+                            }
+                          }}
+                        >
+                          <Save className="h-4 w-4 mr-2" /> Zapisz
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            if (!createdActId) return;
+                            try {
+                              const res = await apiDelete(
+                                API_ENDPOINTS.READING_VOTES.DELETE(
+                                  createdActId,
+                                  vote.id
+                                )
+                              );
+                              if (res.ok) {
+                                setReadingVotes(
+                                  readingVotes.filter((v) => v.id !== vote.id)
+                                );
+                                toast.success("Głosowanie zostało usunięte");
+                              } else {
+                                toast.error("Nie udało się usunąć głosowania");
+                              }
+                            } catch (error) {
+                              toast.error("Wystąpił błąd");
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" /> Usuń
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
-          </form>
+          )}
         </div>
       </div>
     </Layout>

@@ -168,6 +168,37 @@ export const apiGet = async (
 };
 
 /**
+ * Helper do uploadu plików (multipart/form-data)
+ */
+export const apiUploadFile = async (
+  endpoint: string,
+  file: File,
+  options: RequestInit = {}
+): Promise<Response> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const defaultHeaders: HeadersInit = {};
+
+  // Dodaj token jeśli istnieje w localStorage
+  const token = localStorage.getItem('token');
+  if (token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
+
+  return fetch(getApiUrl(endpoint), {
+    ...options,
+    method: 'POST',
+    headers: {
+      ...defaultHeaders,
+      ...options.headers,
+      // Nie ustawiaj Content-Type - przeglądarka ustawi to automatycznie z boundary
+    },
+    body: formData,
+  });
+};
+
+/**
  * Typy odpowiedzi API
  */
 export interface ApiResponse<T = unknown> {
