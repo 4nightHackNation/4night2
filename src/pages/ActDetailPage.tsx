@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { sampleActs, categories } from "@/data/mockData";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { API_ENDPOINTS, apiGet } from "@/config/api";
 
 function getProgressBadge(progress: string) {
   switch (progress) {
@@ -25,8 +26,51 @@ function getProgressBadge(progress: string) {
 
 export default function ActDetailPage() {
   const { actId } = useParams<{ actId: string }>();
-  const act = sampleActs.find((a) => a.id === actId);
+  const [act, setAct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [subscribed, setSubscribed] = useState(false);
+
+  // Pobranie aktu z API
+  useEffect(() => {
+    console.log("=== useEffect START ===");
+    console.log("actId:", actId);
+    if (!actId) {
+      console.log("No actId, returning");
+      return;
+    }
+    
+    console.log("Making API request to:", API_ENDPOINTS.ACTS.DETAIL_WITH_DETAILS(actId));
+    
+    apiGet(API_ENDPOINTS.ACTS.DETAIL_WITH_DETAILS(actId))
+      .then(async (res) => {
+        console.log("API Response received, status:", res.status, "ok:", res.ok);
+        if (res.ok) {
+          const data = await res.json();
+          console.log("Data from API:", data);
+          setAct(data);
+        } else {
+          console.log("API returned error, using mockData");
+          const mockAct = sampleActs.find((a) => a.id === actId);
+          setAct(mockAct || null);
+        }
+      })
+      .catch((err) => {
+        console.error("API Error caught:", err);
+        const mockAct = sampleActs.find((a) => a.id === actId);
+        setAct(mockAct || null);
+      })
+      .finally(() => setLoading(false));
+  }, [actId]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-16 text-center">
+          <p className="text-muted-foreground">Ładowanie...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!act) {
     return (

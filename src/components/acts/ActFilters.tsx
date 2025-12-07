@@ -97,15 +97,15 @@ export function ActFilters({
                 {t("actfilters.categories")}
               </label>
               <Select
-                value={filters.category}
+                value={filters.category || "all"}
                 onValueChange={(v) => onFilterChange("category", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all_categories")} />
+                  <SelectValue placeholder={t("Wszystkie Kategorie")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("actfilters.all_categories")}
+                    {t("Wszystkie kategorie")}
                   </SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
@@ -122,15 +122,15 @@ export function ActFilters({
                 {t("actfilters.status")}
               </label>
               <Select
-                value={filters.status}
+                value={filters.status || "all"}
                 onValueChange={(v) => onFilterChange("status", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all_statuses")} />
+                  <SelectValue placeholder={t("Wszystkie statusy")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("actfilters.all_statuses")}
+                    {t("Wszystkie statusy")}
                   </SelectItem>
                   {filterOptions.status.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
@@ -147,14 +147,14 @@ export function ActFilters({
                 {t("actfilters.progress")}
               </label>
               <Select
-                value={filters.progress}
+                value={filters.progress || "all"}
                 onValueChange={(v) => onFilterChange("progress", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all")} />
+                  <SelectValue placeholder={t("Wszystkie")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("actfilters.all")}</SelectItem>
+                  <SelectItem value="all">{t("Wszystkie")}</SelectItem>
                   {filterOptions.postep.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {t(opt.label)}
@@ -170,15 +170,15 @@ export function ActFilters({
                 {t("actfilters.acttype")}
               </label>
               <Select
-                value={filters.typAktu}
+                value={filters.typAktu || "all"}
                 onValueChange={(v) => onFilterChange("typAktu", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all_types")} />
+                  <SelectValue placeholder={t("Wszystkie rodzaje")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("actfilters.all_types")}
+                    {t("Wszystkie rodzaje")}
                   </SelectItem>
                   {filterOptions.typAktu.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
@@ -195,15 +195,15 @@ export function ActFilters({
                 {t("actfilters.applicant")}
               </label>
               <Select
-                value={filters.sponsor}
+                value={filters.sponsor || "all"}
                 onValueChange={(v) => onFilterChange("sponsor", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all_applicants")} />
+                  <SelectValue placeholder={t("Wszyscy wnioskodawcy")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("actfilters.all_applicants")}
+                    {t("Wszyscy wnioskodawcy")}
                   </SelectItem>
                   {sponsors.map((sponsor) => (
                     <SelectItem key={sponsor} value={sponsor}>
@@ -220,24 +220,24 @@ export function ActFilters({
                 {t("actfilters.cadence")}
               </label>
               <Select
-                value={filters.kadencja}
+                value={filters.kadencja || "all"}
                 onValueChange={(v) => onFilterChange("kadencja", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all_cadences")} />
+                  <SelectValue placeholder={t("Wszystkie kadencje")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("actfilters.all_cadences")}
+                    {t("Wszystkie kadencje")}
                   </SelectItem>
                   <SelectItem value="X">
-                    {t("actfilters.kadencja_X")}
+                    {t("kadencja X")}
                   </SelectItem>
                   <SelectItem value="IX">
-                    {t("actfilters.kadencja_IX")}
+                    {t("kadencja IX")}
                   </SelectItem>
                   <SelectItem value="VIII">
-                    {t("actfilters.kadencja_VIII")}
+                    {t("kadencja VIII")}
                   </SelectItem>
                 </SelectContent>
               </Select>

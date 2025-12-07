@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Bell, Trash2, Plus, X, Check } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { categories, sampleActs } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { API_ENDPOINTS, apiGet } from "@/config/api";
 
 export default function CitizenProfilePage() {
   const { user, isAuthenticated, updateSubscriptions } = useAuth();
@@ -22,6 +23,35 @@ export default function CitizenProfilePage() {
   const [selectedProjects, setSelectedProjects] = useState<string[]>(
     user?.subscriptions || []
   );
+  const [consultationActs, setConsultationActs] = useState(sampleActs);
+  const [loading, setLoading] = useState(true);
+
+  // Pobranie aktów konsultacyjnych z API
+  useEffect(() => {
+    apiGet(API_ENDPOINTS.ACTS.LIST)
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          setConsultationActs(
+            data.filter((act: any) => act.hasConsultation && act.status === "procedowany")
+          );
+        } else {
+          setConsultationActs(
+            sampleActs.filter(
+              (act) => act.hasConsultation && act.status === "procedowany"
+            )
+          );
+        }
+      })
+      .catch(() => {
+        setConsultationActs(
+          sampleActs.filter(
+            (act) => act.hasConsultation && act.status === "procedowany"
+          )
+        );
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   if (!isAuthenticated || user?.role !== "citizen") {
     return (
@@ -61,10 +91,6 @@ export default function CitizenProfilePage() {
     ];
     updateSubscriptions(allSubscriptions);
   };
-
-  const consultationActs = sampleActs.filter(
-    (act) => act.hasConsultation && act.status === "procedowany"
-  );
 
   return (
     <Layout>

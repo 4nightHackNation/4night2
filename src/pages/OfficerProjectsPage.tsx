@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Edit2, Trash2, Eye } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -9,19 +9,44 @@ import { useAuth } from "@/contexts/AuthContext";
 import { sampleActs } from "@/data/mockData";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { API_ENDPOINTS, apiGet } from "@/config/api";
 
 export default function OfficerProjectsPage() {
   const { user, isAuthenticated } = useAuth();
   const { t } = useTranslation();
+  const [projects, setProjects] = useState(sampleActs);
+  const [loading, setLoading] = useState(true);
 
-  // Mock: projekty stworzone przez tego urzędnika
-  const myProjects = sampleActs.filter(
-    (act) =>
-      act.sponsor === "Minister Finansów" ||
-      act.sponsor === "Minister Cyfryzacji"
-  );
+  // Pobranie projektów urzędnika z API
+  useEffect(() => {
+    if (!user?.id) return;
 
-  const [projects, setProjects] = useState(myProjects);
+    apiGet(API_ENDPOINTS.ACTS.BY_OFFICER(user.id))
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          setProjects(data);
+        } else {
+          // Fallback do mockData
+          const myProjects = sampleActs.filter(
+            (act) =>
+              act.sponsor === "Minister Finansów" ||
+              act.sponsor === "Minister Cyfryzacji"
+          );
+          setProjects(myProjects);
+        }
+      })
+      .catch(() => {
+        // Fallback do mockData
+        const myProjects = sampleActs.filter(
+          (act) =>
+            act.sponsor === "Minister Finansów" ||
+            act.sponsor === "Minister Cyfryzacji"
+        );
+        setProjects(myProjects);
+      })
+      .finally(() => setLoading(false));
+  }, [user?.id]);
 
   if (
     !isAuthenticated ||

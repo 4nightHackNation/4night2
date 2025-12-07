@@ -19,7 +19,7 @@
  */
 
 // Główny URL API - tutaj należy wkleić adres serwera API
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7126/api';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5009/api';
 
 // Struktura endpointów dla łatwego dostępu
 export const API_ENDPOINTS = {
@@ -28,6 +28,7 @@ export const API_ENDPOINTS = {
     LIST: '/acts',
     DETAIL: (id: string) => `/acts/${id}`,
     DETAIL_WITH_DETAILS: (id: string) => `/acts/${id}/with-details`,
+    BY_OFFICER: (officerId: string) => `/acts/officer/${officerId}`,
     CREATE: '/acts',
     UPDATE: (id: string) => `/acts/${id}`,
     DELETE: (id: string) => `/acts/${id}`,

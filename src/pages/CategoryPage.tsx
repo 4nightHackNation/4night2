@@ -5,13 +5,16 @@ import { ActFilters } from "@/components/acts/ActFilters";
 import { ActCard } from "@/components/acts/ActCard";
 import { Button } from "@/components/ui/button";
 import { categories, sampleActs } from "@/data/mockData";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
+import { API_ENDPOINTS, apiGet } from "@/config/api";
 
 export default function CategoryPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const category = categories.find((c) => c.id === categoryId);
   const [subscribed, setSubscribed] = useState(false);
+  const [acts, setActs] = useState(sampleActs);
+  const [loading, setLoading] = useState(true);
 
   const [filters, setFilters] = useState({
     title: "",
@@ -22,6 +25,23 @@ export default function CategoryPage() {
     typAktu: "",
     kadencja: "",
   });
+
+  // Pobranie aktów z API przy załadowaniu
+  useEffect(() => {
+    apiGet(API_ENDPOINTS.ACTS.LIST)
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          setActs(data);
+        } else {
+          setActs(sampleActs); // Fallback
+        }
+      })
+      .catch(() => {
+        setActs(sampleActs); // Fallback
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -40,7 +60,7 @@ export default function CategoryPage() {
   };
 
   const filteredActs = useMemo(() => {
-    return sampleActs.filter((act) => {
+    return acts.filter((act) => {
       if (categoryId && act.category !== categoryId) return false;
       if (filters.title && !act.title.toLowerCase().includes(filters.title.toLowerCase())) return false;
       if (filters.status && filters.status !== "all" && act.status !== filters.status) return false;
@@ -49,7 +69,7 @@ export default function CategoryPage() {
       if (filters.kadencja && filters.kadencja !== "all" && act.kadencja !== filters.kadencja) return false;
       return true;
     });
-  }, [categoryId, filters]);
+  }, [categoryId, filters, acts]);
 
   const handleSubscribe = () => {
     setSubscribed(!subscribed);
