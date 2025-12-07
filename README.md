@@ -252,6 +252,12 @@ The following tools were used in the construction of the project:
 
 ---
 
+## Licencja
+
+Projekt opracowany dla HackNations 2025
+
+---
+
 ## Learn More
 
 This project was created and bootstrapped with [Vite](https://vitejs.dev/).
