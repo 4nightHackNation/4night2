@@ -30,7 +30,7 @@
 
 ## About
 
-**4Night - Radar Legislacyjny** is an interactive platform for tracking legislative processes with a built-in public consultation system. The platform enables citizens, government officers, and administrators to monitor, participate in, and manage legislative acts from initiation to enactment.
+**Radar Legislacyjny** is an interactive platform for tracking legislative processes with a built-in public consultation system. The platform enables citizens, government officers, and administrators to monitor, participate in, and manage legislative acts from initiation to enactment.
 
 The project provides full transparency of the legislative process, allowing users to:
 
