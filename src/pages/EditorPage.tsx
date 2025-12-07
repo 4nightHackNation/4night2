@@ -135,6 +135,8 @@ export default function EditorPage() {
       .finally(() => setLoadingAct(false));
   }, [actId]);
 
+  const isEditing = Boolean(actId);
+
   // create/revoke preview URL
   useEffect(() => {
     if (!formData.pdfFile) {
@@ -235,11 +237,6 @@ export default function EditorPage() {
       return;
     }
 
-    if (!formData.pdfFile) {
-      toast.error("Dodaj PDF z treścią aktu");
-      return;
-    }
-
     const payload = new FormData();
     payload.append("id", formData.id);
     payload.append("title", formData.title);
@@ -275,7 +272,7 @@ export default function EditorPage() {
             </Link>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
             <span className="text-foreground font-medium">
-              {t("editor.breadcrumb_new_act")}
+              {isEditing ? "Edycja aktu" : t("editor.breadcrumb_new_act")}
             </span>
           </nav>
         </div>
@@ -284,7 +281,7 @@ export default function EditorPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl lg:text-3xl font-bold mb-8">
-            {t("editor.title_create_new_act")}
+            {isEditing ? "Edycja aktu prawnego" : t("editor.title_create_new_act")}
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-8">

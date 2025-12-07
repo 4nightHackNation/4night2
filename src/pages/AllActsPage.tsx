@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { sampleActs } from "@/data/mockData";
 import i18n from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { API_ENDPOINTS, apiGet } from "@/config/api";
 
 function getActsNoun(count: number, lang: string) {
   const n = Math.abs(count);
@@ -52,6 +53,26 @@ export default function AllActsPage() {
   const [selectedLanguage, setSelectedLanguage] = useState<string>(
     i18n.language || "pl"
   );
+  const [allActs, setAllActs] = useState(sampleActs);
+  const [loading, setLoading] = useState(true);
+
+  // Pobierz akty z API
+  useEffect(() => {
+    apiGet(API_ENDPOINTS.ACTS.LIST)
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          const normalized = Array.isArray(data) ? data : [];
+          setAllActs(normalized.length ? normalized : sampleActs);
+        } else {
+          setAllActs(sampleActs);
+        }
+      })
+      .catch(() => {
+        setAllActs(sampleActs);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -70,7 +91,7 @@ export default function AllActsPage() {
   };
 
   const filteredActs = useMemo(() => {
-    return sampleActs.filter((act) => {
+    return allActs.filter((act) => {
       if (
         filters.title &&
         !act.title.toLowerCase().includes(filters.title.toLowerCase())
@@ -108,7 +129,7 @@ export default function AllActsPage() {
         return false;
       return true;
     });
-  }, [filters]);
+  }, [allActs, filters]);
 
   const count = filteredActs.length;
   const formattedCount = new Intl.NumberFormat(i18n.language).format(count);
@@ -157,6 +178,13 @@ export default function AllActsPage() {
           onReset={handleReset}
         />
 
+        {/* Clear Filters Button - zawsze widoczny */}
+        <div className="mb-6 flex justify-end">
+          <Button variant="outline" onClick={handleReset}>
+            {t("allacts.clear_filters", "Wyczyść wszystkie filtry")}
+          </Button>
+        </div>
+
         {filteredActs.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-lg text-muted-foreground mb-4">
@@ -165,9 +193,6 @@ export default function AllActsPage() {
                 "Nie znaleziono aktów spełniających kryteria wyszukiwania."
               )}
             </p>
-            <Button variant="outline" onClick={handleReset}>
-              {t("allacts.clear_filters", "Wyczyść filtry")}
-            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

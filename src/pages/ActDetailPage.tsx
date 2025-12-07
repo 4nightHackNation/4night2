@@ -60,8 +60,30 @@ export default function ActDetailPage() {
       .then(async (res) => {
         console.log("API Response received, status:", res.status, "ok:", res.ok);
         if (res.ok) {
-          const data = await res.json();
-          console.log("Data from API:", data);
+          let data = await res.json();
+          console.log("Data from API (raw):", data);
+          
+          // Transformuj tagi: jeśli to obiekty z 'name', wyciągnij 'name'
+          if (Array.isArray(data.tags)) {
+            data.tags = data.tags.map((tag: any) => {
+              if (typeof tag === 'string') return tag;
+              if (typeof tag === 'object' && tag.name) return tag.name;
+              return String(tag);
+            });
+          }
+          
+          // Transformuj stages: normalizuj strukturę
+          if (Array.isArray(data.stages)) {
+            data.stages = data.stages.map((stage: any, idx: number) => ({
+              id: stage.id?.toString() ?? `s${idx + 1}`,
+              name: stage.name ?? stage.title ?? '',
+              date: stage.date ?? stage.dateStart ?? null,
+              status: stage.status ?? 'pending',
+              description: stage.description ?? '',
+            }));
+          }
+          
+          console.log("Data from API (transformed):", data);
           setAct(data);
         } else {
           console.log("API returned error, using mockData");
@@ -336,8 +358,8 @@ export default function ActDetailPage() {
               <div className="flex flex-wrap gap-2">
                 {act.tags?.length > 0 ? (
                   Array.isArray(act.tags) 
-                    ? act.tags.map((tag: any) => (
-                        <Badge key={tag} variant="secondary" className="text-sm">
+                    ? act.tags.map((tag: any, idx: number) => (
+                        <Badge key={`${tag}-${idx}`} variant="secondary" className="text-sm">
                           {typeof tag === 'string' ? tag.replace(/_/g, " ") : String(tag)}
                         </Badge>
                       ))

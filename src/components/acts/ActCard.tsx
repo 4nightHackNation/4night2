@@ -59,7 +59,8 @@ export function ActCard({ act }: ActCardProps) {
     console.log(`Subscribed to act "${act.title}" with email: ${email}`);
   };
 
-  const currentStage = act.stages.find((s) => s.status === "in_progress") || act.stages[act.stages.length - 1];
+  const safeStages = Array.isArray(act.stages) ? act.stages : [];
+  const currentStage = safeStages.find((s) => s.status === "in_progress") || safeStages[safeStages.length - 1];
 
   return (
     <>
@@ -100,13 +101,13 @@ export function ActCard({ act }: ActCardProps) {
 
           {/* Tags */}
           <div className="flex flex-wrap gap-1 mb-4">
-            {act.tags.slice(0, 3).map((tag) => (
+            {Array.isArray(act.tags) && act.tags.slice(0, 3).map((tag) => (
               <span key={tag} className="inline-flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded">
                 <Tag className="h-3 w-3" />
-                {tag.replace(/_/g, " ")}
+                {typeof tag === 'string' ? tag.replace(/_/g, " ") : String(tag)}
               </span>
             ))}
-            {act.tags.length > 3 && (
+            {Array.isArray(act.tags) && act.tags.length > 3 && (
               <span className="text-xs text-muted-foreground px-2 py-1">+{act.tags.length - 3}</span>
             )}
           </div>
