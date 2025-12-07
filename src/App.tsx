@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CookieConsentProvider } from "@/contexts/CookieConsentContext";
+import { CookieConsent } from "@/components/CookieConsent";
 import Index from "./pages/Index";
 import CategoryPage from "./pages/CategoryPage";
 import ActDetailPage from "./pages/ActDetailPage";
@@ -19,12 +21,14 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AccessibilityProvider>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+    <CookieConsentProvider>
+      <AccessibilityProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <CookieConsent />
+            <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/kategoria/:categoryId" element={<CategoryPage />} />
@@ -36,11 +40,10 @@ const App = () => (
               <Route path="/admin-zarzadzanie" element={<AdminManagementPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </AccessibilityProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </AccessibilityProvider>
+    </CookieConsentProvider>
   </QueryClientProvider>
-);
-
-export default App;
+);export default App;
