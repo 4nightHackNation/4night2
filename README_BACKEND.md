@@ -1,4 +1,4 @@
-# 4Night - Radar Legislacyjny
+# Radar Legislacyjny
 
 Interaktywna platforma do śledzenia procesów legislacyjnych z wbudowanym systemem konsultacji publicznych.
 

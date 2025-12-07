@@ -1,73 +1,269 @@
-# Welcome to your Lovable project
+<h1 align="center">
 
-## Project info
+<a href="#"> Radar Legislacyjny </a>
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+</h1>
 
-## How can I edit this code?
+<h3 align="center">Comprehensive monitoring of legislative processes in Poland</h3>
 
-There are several ways of editing your application.
+<h4 align="center">
 
-**Use Lovable**
+     Status: In Development
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+</h4>
 
-Changes made via Lovable will be committed automatically to this repo.
+<p align="center">
 
-**Use your preferred IDE**
+<a href="#about">About</a> •
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+<a href="#features">Features</a> •
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+<a href="#how-it-works">How it works</a> •
 
-Follow these steps:
+<a href="#tech-stack">Tech Stack</a> •
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+<a href="#author">Author</a> •
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+<a href="#user-content-license">License</a>
 
-# Step 3: Install the necessary dependencies.
-npm i
+</p>
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## About
+
+**4Night - Radar Legislacyjny** is an interactive platform for tracking legislative processes with a built-in public consultation system. The platform enables citizens, government officers, and administrators to monitor, participate in, and manage legislative acts from initiation to enactment.
+
+The project provides full transparency of the legislative process, allowing users to:
+
+- Track legal changes from pre-consultations to publication in the Journal of Laws
+- Participate in public consultations and influence the shape of law
+- Understand the impact of regulations on citizens, businesses, and public administration
+- Manage legislative projects and officer accounts (for administrators)
+
+---
+
+## Features
+
+### For Citizens
+
+- [x] Browse legislative acts and their status
+- [x] Subscribe to categories and projects for notifications
+- [x] Add opinions during public consultation periods
+- [x] View personal opinions and track legislative progress
+- [x] Multi-language support (Polish, English, German, Ukrainian)
+
+### For Officers
+
+- [x] Create and edit legislative act projects
+- [x] Review citizen submissions and opinions
+- [x] Approve opinions for public consultations
+- [x] Manage legislative progress and timelines
+- [x] Access personal project dashboard
+
+### For Administrators
+
+- [x] Manage officer and administrator accounts (CRUD operations)
+- [x] Generate secure passwords (12-character with letters, numbers, symbols)
+- [x] System statistics (active officers, total projects)
+- [x] Real-time search and filtering of accounts
+- [x] Copy login credentials to clipboard
+- [x] Account status management (activate/deactivate)
+- [x] Full system administration access
+
+---
+
+## How it works
+
+The project is divided into two parts:
+
+1. **Backend** (separate repository)
+
+2. **Frontend** (this repository)
+
+This repository contains only the Frontend part. The Frontend requires the Backend to be running to work properly.
+
+### Pre-requisites
+
+Before you begin, you will need to have the following tools installed on your machine:
+
+[Git](https://git-scm.com), [Node.js](https://nodejs.org/en/) (v18 or higher).
+
+In addition, it is good to have an editor to work with the code like [VSCode](https://code.visualstudio.com/)
+
+#### Running the web application (Frontend)
+
+```bash
+
+
+
+# Clone this repository
+
+$ git clone git@github.com:yourusername/4night.git
+
+
+
+# Access the project folder in your terminal
+
+$ cd 4night
+
+
+
+# Install the dependencies
+
+$ npm install
+
+
+
+# Run the application in development mode
+
+$ npm run dev
+
+
+
+# The application will open on the port: 8080 - go to http://localhost:8080
+
+
+
 ```
 
-**Edit a file directly in GitHub**
+#### Building for production
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
 
-**Use GitHub Codespaces**
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+# Build the application
 
-This project is built with:
+$ npm run build
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
 
-## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+# Preview the production build
 
-## Can I connect a custom domain to my Lovable project?
+$ npm run preview
 
-Yes, you can!
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```
+
+### Login Credentials
+
+#### Citizen Account
+
+- Email: `obywatel@example.com`
+- Password: `obywatel123`
+- Tab: **Citizen**
+
+#### Officer Account
+
+- Email: `urzednik@gov.pl`
+- Password: `urzednik123`
+- Tab: **Officer**
+
+#### Administrator Account
+
+- Email: `admin@gov.pl`
+- Password: `admin123`
+- Tab: **Administrator**
+- Access: `/admin-zarzadzanie` - Account management panel
+
+---
+
+## Tech Stack
+
+The following tools were used in the construction of the project:
+
+#### **Platform** ([React](https://reactjs.org/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/))
+
+- **[React Router Dom](https://github.com/ReactTraining/react-router/tree/master/packages/react-router-dom)** - Client-side routing
+
+- **[React Icons](https://react-icons.github.io/react-icons/)** - Icon library (via Lucide React)
+
+- **[TanStack Query](https://tanstack.com/query)** - Data fetching and state management
+
+- **[React Hook Form](https://react-hook-form.com/)** - Form handling and validation
+
+- **[Zod](https://zod.dev/)** - Schema validation
+
+- **[i18next](https://www.i18next.com/)** - Internationalization framework
+
+- **[shadcn/ui](https://ui.shadcn.com/)** - UI component library
+
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+
+- **[Radix UI](https://www.radix-ui.com/)** - Accessible component primitives
+
+- **[date-fns](https://date-fns.org/)** - Date utility library
+
+- **[Sonner](https://sonner.emilkowal.ski/)** - Toast notifications
+
+> See the file [package.json](https://github.com/fszreder/4night/blob/master/package.json)
+
+#### **Utils**
+
+- API: Backend API integration (to be implemented)
+
+- Editor: **[Visual Studio Code](https://code.visualstudio.com/)**
+
+- Icons: **[Lucide React](https://lucide.dev/)**
+
+- Fonts: System fonts with Tailwind CSS typography
+
+- Build Tool: **[Vite](https://vitejs.dev/)** - Next generation frontend tooling
+
+---
+
+## Authors
+
+ <a href="https://github.com/kaspares">
+
+ <img style="border-radius: 50%;" src="https://github.com/kaspares.png" width="70px;" alt="Author"/>
+
+ <p><b>Kacper Kazimierczuk</b></p></a>
+
+  <a href="https://github.com/mpisak">
+
+ <img style="border-radius: 50%;" src="https://github.com/mpisak.png" width="70px;" alt="Author"/>
+
+ <p><b>Mateusz Pisański</b></p></a>
+
+  <a href="https://github.com/weedfi">
+
+ <img style="border-radius: 50%;" src="https://github.com/weedfi.png" width="70px;" alt="Author"/>
+
+ <p><b>Dawid Filas</b></p></a>
+
+<a href="https://github.com/damigus">
+
+ <img style="border-radius: 50%;" src="https://github.com/damigus.png" width="70px;" alt="Author"/>
+
+ <p><b>Damian Guz</b></p></a>
+
+<a href="https://github.com/fszreder">
+
+ <img style="border-radius: 50%;" src="https://github.com/fszreder.png" width="70px;" alt="Author"/>
+
+ <p><b>Filip Szreder</b></p></a>
+ 
+  <a href="https://github.com/piaskar">
+
+ <img style="border-radius: 50%;" src="https://github.com/piaskar.png" width="70px;" alt="Author"/>
+
+ <p><b>Maciej Piasecki</b></p></a>
+
+---
+
+## Licencja
+
+Projekt opracowany dla HackNations 2025
+
+---
+
+## Learn More
+
+This project was created and bootstrapped with [Vite](https://vitejs.dev/).
+
+You can learn more in the [Vite documentation](https://vitejs.dev/guide/).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
+
+For shadcn/ui components, visit the [shadcn/ui documentation](https://ui.shadcn.com/).
