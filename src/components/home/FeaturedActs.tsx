@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Clock, User } from "lucide-react";
-import { featuredActs } from "@/data/mockData";
 import { Badge } from "@/components/ui/badge";
 import { t } from "i18next";
+import { useState, useEffect } from "react";
+import { API_ENDPOINTS, apiGet } from "@/config/api";
+import { sampleActs } from "@/data/mockData";
+import { format } from "date-fns";
+import { pl } from "date-fns/locale";
 
 function getStatusBadge(progress: string) {
   switch (progress) {
@@ -19,17 +23,53 @@ function getStatusBadge(progress: string) {
   }
 }
 
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return "-";
+  try {
+    const date = new Date(dateString);
+    return format(date, "d MMM yyyy", { locale: pl });
+  } catch {
+    return dateString;
+  }
+};
+
 export function FeaturedActs() {
+  const [acts, setActs] = useState(sampleActs.slice(0, 4));
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiGet(API_ENDPOINTS.ACTS.LIST)
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          // Sortuj po dacie i weź 4 najnowsze
+          const sorted = Array.isArray(data) 
+            ? data
+                .sort((a: any, b: any) => 
+                  new Date(b.dateSubmitted).getTime() - new Date(a.dateSubmitted).getTime()
+                )
+                .slice(0, 4)
+            : sampleActs.slice(0, 4);
+          setActs(sorted);
+        } else {
+          setActs(sampleActs.slice(0, 4));
+        }
+      })
+      .catch(() => {
+        setActs(sampleActs.slice(0, 4));
+      })
+      .finally(() => setLoading(false));
+  }, []);
   return (
     <section className="py-12 bg-secondary/50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl lg:text-3xl font-bold text-foreground">
-              {t("acts.special_title")}
+              {t("Najnowsze Akty") || "Najnowsze akty"}
             </h2>
             <p className="text-muted-foreground mt-1">
-              {t("acts.special_title_desciription")}
+              {t("Ostatnio dodane projekty ustaw") || "Ostatnio dodane projekty ustaw"}
             </p>
           </div>
           <Link
@@ -42,7 +82,7 @@ export function FeaturedActs() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {featuredActs.map((act, index) => (
+          {acts.map((act: any, index) => (
             <Link
               key={act.id}
               to={`/akt/${act.id}`}
@@ -53,7 +93,7 @@ export function FeaturedActs() {
                 {getStatusBadge(act.progress)}
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  {act.lastUpdated}
+                  {formatDate(act.dateSubmitted)}
                 </span>
               </div>
 
