@@ -15,7 +15,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 interface ActFiltersProps {
   filters: {
@@ -36,6 +36,7 @@ export function ActFilters({
   onFilterChange,
   onReset,
 }: ActFiltersProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
 
   const hasActiveFilters = Object.values(filters).some(
@@ -53,7 +54,7 @@ export function ActFilters({
             >
               <Filter className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-lg">
-                {t("actfilters.filters", "Filtry")}
+                {t("actfilters.filters")}
               </h3>
               {isOpen ? (
                 <ChevronUp className="h-4 w-4" />
@@ -70,7 +71,7 @@ export function ActFilters({
               className="text-muted-foreground hover:text-foreground"
             >
               <X className="h-4 w-4 mr-1" />
-              Wyczyść filtry
+              {t("actfilters.clear_filters")}
             </Button>
           )}
         </div>
@@ -80,13 +81,10 @@ export function ActFilters({
             {/* Title search */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.title", "Tytuł")}
+                {t("actfilters.title")}
               </label>
               <Input
-                placeholder={t(
-                  "actfilters.search_placeholder",
-                  "Szukaj po tytule..."
-                )}
+                placeholder={t("actfilters.search_placeholder")}
                 value={filters.title}
                 onChange={(e) => onFilterChange("title", e.target.value)}
                 className="h-11"
@@ -96,17 +94,19 @@ export function ActFilters({
             {/* Category */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.categories", "Kategorie")}
+                {t("actfilters.categories")}
               </label>
               <Select
                 value={filters.category}
                 onValueChange={(v) => onFilterChange("category", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Wszystkie kategorie" />
+                  <SelectValue placeholder={t("actfilters.all_categories")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Wszystkie kategorie</SelectItem>
+                  <SelectItem value="all">
+                    {t("actfilters.all_categories")}
+                  </SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
                       {cat.name}
@@ -119,20 +119,22 @@ export function ActFilters({
             {/* Status */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.status", "Status")}
+                {t("actfilters.status")}
               </label>
               <Select
                 value={filters.status}
                 onValueChange={(v) => onFilterChange("status", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Wszystkie statusy" />
+                  <SelectValue placeholder={t("actfilters.all_statuses")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Wszystkie statusy</SelectItem>
+                  <SelectItem value="all">
+                    {t("actfilters.all_statuses")}
+                  </SelectItem>
                   {filterOptions.status.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(opt.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -142,20 +144,20 @@ export function ActFilters({
             {/* Progress */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.progress", "Postęp prac")}
+                {t("actfilters.progress")}
               </label>
               <Select
                 value={filters.progress}
                 onValueChange={(v) => onFilterChange("progress", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Wszystkie" />
+                  <SelectValue placeholder={t("actfilters.all")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Wszystkie</SelectItem>
+                  <SelectItem value="all">{t("actfilters.all")}</SelectItem>
                   {filterOptions.postep.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(opt.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -165,20 +167,22 @@ export function ActFilters({
             {/* Typ aktu */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.acttype", "Rodzaj aktu")}
+                {t("actfilters.acttype")}
               </label>
               <Select
                 value={filters.typAktu}
                 onValueChange={(v) => onFilterChange("typAktu", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Wszystkie typy" />
+                  <SelectValue placeholder={t("actfilters.all_types")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Wszystkie typy</SelectItem>
+                  <SelectItem value="all">
+                    {t("actfilters.all_types")}
+                  </SelectItem>
                   {filterOptions.typAktu.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(opt.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -188,17 +192,19 @@ export function ActFilters({
             {/* Wnioskodawca */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.applicant", "Wnioskodawca")}
+                {t("actfilters.applicant")}
               </label>
               <Select
                 value={filters.sponsor}
                 onValueChange={(v) => onFilterChange("sponsor", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Wszyscy wnioskodawcy" />
+                  <SelectValue placeholder={t("actfilters.all_applicants")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Wszyscy wnioskodawcy</SelectItem>
+                  <SelectItem value="all">
+                    {t("actfilters.all_applicants")}
+                  </SelectItem>
                   {sponsors.map((sponsor) => (
                     <SelectItem key={sponsor} value={sponsor}>
                       {sponsor}
@@ -211,20 +217,28 @@ export function ActFilters({
             {/* Kadencja */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.cadence", "Kadencja")}
+                {t("actfilters.cadence")}
               </label>
               <Select
                 value={filters.kadencja}
                 onValueChange={(v) => onFilterChange("kadencja", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Wszystkie kadencje" />
+                  <SelectValue placeholder={t("actfilters.all_cadences")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Wszystkie kadencje</SelectItem>
-                  <SelectItem value="X">X kadencja</SelectItem>
-                  <SelectItem value="IX">IX kadencja</SelectItem>
-                  <SelectItem value="VIII">VIII kadencja</SelectItem>
+                  <SelectItem value="all">
+                    {t("actfilters.all_cadences")}
+                  </SelectItem>
+                  <SelectItem value="X">
+                    {t("actfilters.kadencja_X")}
+                  </SelectItem>
+                  <SelectItem value="IX">
+                    {t("actfilters.kadencja_IX")}
+                  </SelectItem>
+                  <SelectItem value="VIII">
+                    {t("actfilters.kadencja_VIII")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
