@@ -11,17 +11,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccessibility } from "@/contexts/AccessibilityContext";
 import { sampleActs } from "@/data/mockData";
 import { TEST_ACCOUNTS } from "@/data/testData";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 export function Header() {
   const navigate = useNavigate();
   const { user, isAuthenticated, login, logout } = useAuth();
-  const { fontSize, setFontSize, highContrast, setHighContrast } = useAccessibility();
+  const { fontSize, setFontSize, highContrast, setHighContrast } =
+    useAccessibility();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<typeof sampleActs>([]);
   const [showResults, setShowResults] = useState(false);
@@ -53,7 +62,8 @@ export function Header() {
 
   const handleLogin = async () => {
     const email = activeLoginTab === "officer" ? loginEmail : adminEmail;
-    const password = activeLoginTab === "officer" ? loginPassword : adminPassword;
+    const password =
+      activeLoginTab === "officer" ? loginPassword : adminPassword;
     const role = activeLoginTab as "officer" | "admin";
     const success = await login(email, password, role);
     if (success) {
@@ -79,24 +89,31 @@ export function Header() {
     large: "A+",
     xlarge: "A++",
   };
+  const { t } = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    i18n.language || "pl"
+  );
 
   return (
     <header className="sticky top-0 z-50 bg-primary text-primary-foreground shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 lg:h-20">
-        <Link to="/" className="flex items-center gap-3 shrink-0">
-          <img
-            src="/8.png"
-            alt="Radar Legislacyjny – logo"
-            className="w-10 h-10 lg:w-12 lg:h-12 rounded"
-          />
+          <Link to="/" className="flex items-center gap-3 shrink-0">
+            <img
+              src="/8.png"
+              alt="Radar Legislacyjny – logo"
+              className="w-10 h-10 lg:w-12 lg:h-12 rounded"
+            />
 
-          <div className="hidden sm:block">
-            <h1 className="text-lg lg:text-xl font-bold leading-tight">Radar Legislacyjny</h1>
-            <p className="text-xs lg:text-sm opacity-80">Śledzenie procesów prawnych</p>
-          </div>
-        </Link>
-
+            <div className="hidden sm:block">
+              <h1 className="text-lg lg:text-xl font-bold leading-tight">
+                {t("site.title")}
+              </h1>
+              <p className="text-xs lg:text-sm opacity-80">
+                {t("header.titleDescription")}
+              </p>
+            </div>
+          </Link>
 
           {/* Search - Desktop */}
           <div className="hidden md:block flex-1 max-w-xl mx-8 relative">
@@ -104,7 +121,7 @@ export function Header() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Szukaj aktów prawnych..."
+                placeholder={t("header.search_placeholder")}
                 className="pl-10 bg-primary-foreground text-foreground border-none h-12"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
@@ -125,8 +142,12 @@ export function Header() {
                       setSearchQuery("");
                     }}
                   >
-                    <p className="font-medium text-foreground text-sm">{act.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{act.sponsor}</p>
+                    <p className="font-medium text-foreground text-sm">
+                      {act.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {act.sponsor}
+                    </p>
                   </button>
                 ))}
               </div>
@@ -137,7 +158,9 @@ export function Header() {
           <div className="flex items-center gap-2 lg:gap-4">
             {/* Accessibility controls - Desktop */}
             <div className="hidden lg:flex items-center gap-2 border-r border-primary-foreground/30 pr-4">
-              <span className="text-xs opacity-80">Rozmiar:</span>
+              <span className="text-xs opacity-80">
+                {t("header.sizetext")}:
+              </span>
               <div className="flex gap-1">
                 {(["normal", "large", "xlarge"] as const).map((size) => (
                   <Button
@@ -166,7 +189,7 @@ export function Header() {
                 aria-label="Wysoki kontrast"
               >
                 <Eye className="h-4 w-4 mr-1" />
-                <span className="text-xs">Kontrast</span>
+                <span className="text-xs">{t("header.contrasttext")}</span>
               </Button>
             </div>
 
@@ -174,7 +197,10 @@ export function Header() {
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/20">
+                  <Button
+                    variant="ghost"
+                    className="text-primary-foreground hover:bg-primary-foreground/20"
+                  >
                     <User className="h-5 w-5 mr-2" />
                     <span className="hidden sm:inline">{user?.name}</span>
                   </Button>
@@ -198,13 +224,18 @@ export function Header() {
                       </DropdownMenuItem>
                       {user?.role === "admin" && (
                         <DropdownMenuItem asChild>
-                          <Link to="/admin-zarzadzanie">Zarządzanie kontami</Link>
+                          <Link to="/admin-zarzadzanie">
+                            Zarządzanie kontami
+                          </Link>
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                     </>
                   )}
-                  <DropdownMenuItem onClick={logout} className="text-destructive">
+                  <DropdownMenuItem
+                    onClick={logout}
+                    className="text-destructive"
+                  >
                     <LogOut className="h-4 w-4 mr-2" />
                     Wyloguj
                   </DropdownMenuItem>
@@ -213,9 +244,12 @@ export function Header() {
             ) : (
               <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/20">
+                  <Button
+                    variant="ghost"
+                    className="text-primary-foreground hover:bg-primary-foreground/20"
+                  >
                     <User className="h-5 w-5 mr-2" />
-                    <span className="hidden sm:inline">Zaloguj się</span>
+                    <span className="hidden sm:inline">{t("auth.login")}</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
@@ -223,7 +257,11 @@ export function Header() {
                     <DialogTitle className="text-xl">Logowanie</DialogTitle>
                   </DialogHeader>
                   <div className="pt-4">
-                    <Tabs value={activeLoginTab} onValueChange={setActiveLoginTab} className="w-full">
+                    <Tabs
+                      value={activeLoginTab}
+                      onValueChange={setActiveLoginTab}
+                      className="w-full"
+                    >
                       <TabsList className="grid w-full grid-cols-3 mb-4">
                         <TabsTrigger value="officer">Urzędnik</TabsTrigger>
                         <TabsTrigger value="admin">Administrator</TabsTrigger>
@@ -234,14 +272,29 @@ export function Header() {
                       <TabsContent value="officer" className="space-y-4">
                         <div className="bg-muted p-3 rounded-lg border border-border space-y-2">
                           <div>
-                            <p className="text-sm font-medium text-foreground mb-1">🔑 Konto Urzędnika:</p>
-                            <p className="text-xs text-muted-foreground">Email: <span className="font-mono bg-background px-1 rounded">{TEST_ACCOUNTS.officer.email}</span></p>
-                            <p className="text-xs text-muted-foreground">Hasło: <span className="font-mono bg-background px-1 rounded">{TEST_ACCOUNTS.officer.password}</span></p>
+                            <p className="text-sm font-medium text-foreground mb-1">
+                              🔑 Konto Urzędnika:
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Email:{" "}
+                              <span className="font-mono bg-background px-1 rounded">
+                                {TEST_ACCOUNTS.officer.email}
+                              </span>
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Hasło:{" "}
+                              <span className="font-mono bg-background px-1 rounded">
+                                {TEST_ACCOUNTS.officer.password}
+                              </span>
+                            </p>
                           </div>
                         </div>
-                        
+
                         <div>
-                          <label htmlFor="officer-email" className="block text-sm font-medium mb-2">
+                          <label
+                            htmlFor="officer-email"
+                            className="block text-sm font-medium mb-2"
+                          >
                             Adres e-mail
                           </label>
                           <Input
@@ -254,7 +307,10 @@ export function Header() {
                           />
                         </div>
                         <div>
-                          <label htmlFor="officer-password" className="block text-sm font-medium mb-2">
+                          <label
+                            htmlFor="officer-password"
+                            className="block text-sm font-medium mb-2"
+                          >
                             Hasło
                           </label>
                           <Input
@@ -266,7 +322,10 @@ export function Header() {
                             className="h-12"
                           />
                         </div>
-                        <Button onClick={handleLogin} className="w-full h-12 bg-primary hover:bg-gov-navy-dark">
+                        <Button
+                          onClick={handleLogin}
+                          className="w-full h-12 bg-primary hover:bg-gov-navy-dark"
+                        >
                           Zaloguj się
                         </Button>
                         <p className="text-xs text-muted-foreground text-center">
@@ -277,14 +336,31 @@ export function Header() {
                       {/* Admin Login Tab */}
                       <TabsContent value="admin" className="space-y-4">
                         <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
-                          <p className="text-sm font-medium text-amber-900 mb-1">👨‍💼 Konto Administratora:</p>
-                          <p className="text-xs text-amber-700">Email: <span className="font-mono bg-white px-1 rounded">{TEST_ACCOUNTS.admin.email}</span></p>
-                          <p className="text-xs text-amber-700">Hasło: <span className="font-mono bg-white px-1 rounded">{TEST_ACCOUNTS.admin.password}</span></p>
-                          <p className="text-xs text-amber-600 mt-2">Sekcja dla administratorów systemu</p>
+                          <p className="text-sm font-medium text-amber-900 mb-1">
+                            👨‍💼 Konto Administratora:
+                          </p>
+                          <p className="text-xs text-amber-700">
+                            Email:{" "}
+                            <span className="font-mono bg-white px-1 rounded">
+                              {TEST_ACCOUNTS.admin.email}
+                            </span>
+                          </p>
+                          <p className="text-xs text-amber-700">
+                            Hasło:{" "}
+                            <span className="font-mono bg-white px-1 rounded">
+                              {TEST_ACCOUNTS.admin.password}
+                            </span>
+                          </p>
+                          <p className="text-xs text-amber-600 mt-2">
+                            Sekcja dla administratorów systemu
+                          </p>
                         </div>
-                        
+
                         <div>
-                          <label htmlFor="admin-email" className="block text-sm font-medium mb-2">
+                          <label
+                            htmlFor="admin-email"
+                            className="block text-sm font-medium mb-2"
+                          >
                             Adres e-mail
                           </label>
                           <Input
@@ -297,7 +373,10 @@ export function Header() {
                           />
                         </div>
                         <div>
-                          <label htmlFor="admin-password" className="block text-sm font-medium mb-2">
+                          <label
+                            htmlFor="admin-password"
+                            className="block text-sm font-medium mb-2"
+                          >
                             Hasło
                           </label>
                           <Input
@@ -309,7 +388,10 @@ export function Header() {
                             className="h-12"
                           />
                         </div>
-                        <Button onClick={handleLogin} className="w-full h-12 bg-amber-600 hover:bg-amber-700">
+                        <Button
+                          onClick={handleLogin}
+                          className="w-full h-12 bg-amber-600 hover:bg-amber-700"
+                        >
                           Zaloguj się
                         </Button>
                         <p className="text-xs text-muted-foreground text-center">
@@ -320,14 +402,31 @@ export function Header() {
                       {/* Citizen Login Tab */}
                       <TabsContent value="citizen" className="space-y-4">
                         <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
-                          <p className="text-sm font-medium text-blue-900 mb-1">🔑 Konto testowe obywatela:</p>
-                          <p className="text-xs text-blue-700">Email: <span className="font-mono bg-white px-1 rounded">{TEST_ACCOUNTS.citizen.email}</span></p>
-                          <p className="text-xs text-blue-700">Hasło: <span className="font-mono bg-white px-1 rounded">{TEST_ACCOUNTS.citizen.password}</span></p>
-                          <p className="text-xs text-blue-600 mt-2">Sekcja dla obywateli i organizacji pozarządowych</p>
+                          <p className="text-sm font-medium text-blue-900 mb-1">
+                            🔑 Konto testowe obywatela:
+                          </p>
+                          <p className="text-xs text-blue-700">
+                            Email:{" "}
+                            <span className="font-mono bg-white px-1 rounded">
+                              {TEST_ACCOUNTS.citizen.email}
+                            </span>
+                          </p>
+                          <p className="text-xs text-blue-700">
+                            Hasło:{" "}
+                            <span className="font-mono bg-white px-1 rounded">
+                              {TEST_ACCOUNTS.citizen.password}
+                            </span>
+                          </p>
+                          <p className="text-xs text-blue-600 mt-2">
+                            Sekcja dla obywateli i organizacji pozarządowych
+                          </p>
                         </div>
-                        
+
                         <div>
-                          <label htmlFor="citizen-email" className="block text-sm font-medium mb-2">
+                          <label
+                            htmlFor="citizen-email"
+                            className="block text-sm font-medium mb-2"
+                          >
                             Adres e-mail
                           </label>
                           <Input
@@ -340,7 +439,10 @@ export function Header() {
                           />
                         </div>
                         <div>
-                          <label htmlFor="citizen-password" className="block text-sm font-medium mb-2">
+                          <label
+                            htmlFor="citizen-password"
+                            className="block text-sm font-medium mb-2"
+                          >
                             Hasło
                           </label>
                           <Input
@@ -352,11 +454,15 @@ export function Header() {
                             className="h-12"
                           />
                         </div>
-                        <Button onClick={handleCitizenLogin} className="w-full h-12 bg-primary hover:bg-primary/90">
+                        <Button
+                          onClick={handleCitizenLogin}
+                          className="w-full h-12 bg-primary hover:bg-primary/90"
+                        >
                           Zaloguj się
                         </Button>
                         <p className="text-xs text-muted-foreground text-center">
-                          Logowanie dla obywateli, organizacji pozarządowych i zainteresowanych stron
+                          Logowanie dla obywateli, organizacji pozarządowych i
+                          zainteresowanych stron
                         </p>
                       </TabsContent>
                     </Tabs>
@@ -373,7 +479,11 @@ export function Header() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Menu"
             >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </Button>
           </div>
         </div>

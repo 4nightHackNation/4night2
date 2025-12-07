@@ -3,8 +3,10 @@ import { CategoryCard } from "@/components/home/CategoryCard";
 import { FeaturedActs } from "@/components/home/FeaturedActs";
 import { categories } from "@/data/mockData";
 import { FileText, TrendingUp, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Index = () => {
+  const { t } = useTranslation();
   return (
     <Layout>
       {/* Hero Section */}
@@ -12,24 +14,23 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl">
             <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold mb-4 leading-tight">
-              Radar Legislacyjny
+              {t("site.title")}
             </h1>
             <p className="text-lg lg:text-xl opacity-90 mb-6 leading-relaxed">
-              Kompleksowe monitorowanie procesów legislacyjnych w Polsce. 
-              Śledź zmiany prawne od momentu ich inicjacji aż po wejście w życie.
+              {t("site.description")}
             </p>
             <div className="flex flex-wrap gap-6 text-sm lg:text-base">
               <div className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                <span>179 aktów w procedowaniu</span>
+                {t("stats.acts_in_progress", { count: 179 })}
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
-                <span>X kadencja Sejmu RP</span>
+                {t("stats.sejm_term", { term: 10 })}
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                <span>Otwarte konsultacje publiczne</span>
+                {t("stats.open_consultations", { count: 12 })}
               </div>
             </div>
           </div>
@@ -41,10 +42,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="mb-8">
             <h2 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
-              Kategorie tematyczne
+              {t("categories.title")}
             </h2>
             <p className="text-muted-foreground">
-              Przeglądaj akty prawne według obszarów tematycznych. Subskrybuj kategorie, aby otrzymywać powiadomienia.
+              {t("categories.description")}
             </p>
           </div>
 
@@ -73,27 +74,33 @@ const Index = () => {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FileText className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Pełna transparentność</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                {t("featured.full_transparency")}
+              </h3>
               <p className="text-muted-foreground">
-                Dostęp do wszystkich etapów procesu legislacyjnego - od prekonsultacji do publikacji w Dzienniku Ustaw.
+                {t("featured.full_transparency.description")}
               </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <TrendingUp className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Analiza wpływu</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                {t("featured.impact_analysis")}
+              </h3>
               <p className="text-muted-foreground">
-                Zrozum skutki regulacji dla obywateli, przedsiębiorców i administracji publicznej.
+                {t("featured.impact_analysis.description")}
               </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Partycypacja obywatelska</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                {t("featured.citizen_participation")}
+              </h3>
               <p className="text-muted-foreground">
-                Bierz udział w konsultacjach publicznych i wpływaj na kształt prawa w Polsce.
+                {t("featured.citizen_participation.description")}
               </p>
             </div>
           </div>

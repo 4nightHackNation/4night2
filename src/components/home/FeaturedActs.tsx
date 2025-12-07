@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Clock, User } from "lucide-react";
 import { featuredActs } from "@/data/mockData";
 import { Badge } from "@/components/ui/badge";
+import { t } from "i18next";
 
 function getStatusBadge(progress: string) {
   switch (progress) {
@@ -10,7 +11,9 @@ function getStatusBadge(progress: string) {
     case "w_toku":
       return <Badge className="bg-status-in-progress text-white">W toku</Badge>;
     case "archiwalny":
-      return <Badge className="bg-status-archived text-white">Archiwalny</Badge>;
+      return (
+        <Badge className="bg-status-archived text-white">Archiwalny</Badge>
+      );
     default:
       return null;
   }
@@ -22,14 +25,18 @@ export function FeaturedActs() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-foreground">Wyróżnione akty</h2>
-            <p className="text-muted-foreground mt-1">Najważniejsze projekty w bieżącej kadencji</p>
+            <h2 className="text-2xl lg:text-3xl font-bold text-foreground">
+              {t("acts.special_title")}
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              {t("acts.special_title_desciription")}
+            </p>
           </div>
           <Link
             to="/wszystkie"
             className="hidden sm:flex items-center gap-2 text-primary hover:text-gov-navy-dark font-medium transition-colors"
           >
-            Zobacz wszystkie
+            {t("acts.see_all")}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
