@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { ChevronRight, Save, Plus, Trash2 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import {
 } from "@/data/mockData";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { API_ENDPOINTS, apiGet } from "@/config/api";
 
 type StatusType =
   | "planowany"
@@ -50,10 +51,13 @@ interface FormState {
 
 export default function EditorPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const { t } = useTranslation("common");
+  const searchParams = new URLSearchParams(location.search);
+  const actId = searchParams.get("actId");
 
   const [formData, setFormData] = useState<FormState>({
     id: `PL_2025_${String(Math.floor(Math.random() * 900) + 100)}`,
@@ -81,6 +85,55 @@ export default function EditorPage() {
   ]);
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [, setLoadingAct] = useState(false);
+
+  // Prefill when editing existing act
+  useEffect(() => {
+    if (!actId) return;
+    setLoadingAct(true);
+    apiGet(API_ENDPOINTS.ACTS.DETAIL_WITH_DETAILS(actId))
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = await res.json();
+        const safeTags = Array.isArray(data.tags)
+          ? data.tags.map((tag: any) => (typeof tag === "string" ? tag : String(tag)))
+          : [];
+        const safeStages = Array.isArray(data.stages)
+          ? data.stages.map((s: any, idx: number) => ({
+              id: s.id?.toString() ?? `s${idx + 1}`,
+              name: s.name ?? "",
+              date: s.date ?? "",
+              status: (s.status as "pending" | "in_progress" | "completed") ?? "pending",
+            }))
+          : [
+              {
+                id: "s1",
+                name: "Projekt został przyjęty do prac rady ministrów",
+                date: "",
+                status: "pending" as const,
+              },
+            ];
+
+        setFormData((prev) => ({
+          ...prev,
+          id: data.id ?? actId,
+          title: data.title ?? "",
+          summary: data.summary ?? data.description ?? "",
+          status: (data.status as StatusType) ?? "planowany",
+          category: data.category ?? "",
+          tags: safeTags,
+          priority: (data.priority as PriorityType) ?? "normal",
+          sponsor: data.sponsor ?? "",
+          hasConsultation: Boolean(data.consultationStart || data.consultationEnd),
+          consultationStart: data.consultationStart ?? "",
+          consultationEnd: data.consultationEnd ?? "",
+          urgency: data.urgency ?? "normal",
+          pdfFile: null,
+        }));
+        setStages(safeStages);
+      })
+      .finally(() => setLoadingAct(false));
+  }, [actId]);
 
   // create/revoke preview URL
   useEffect(() => {

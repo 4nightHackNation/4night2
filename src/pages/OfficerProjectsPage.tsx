@@ -10,43 +10,39 @@ import { sampleActs } from "@/data/mockData";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { API_ENDPOINTS, apiGet } from "@/config/api";
+import { format } from "date-fns";
+import { pl } from "date-fns/locale";
 
 export default function OfficerProjectsPage() {
   const { user, isAuthenticated } = useAuth();
   const { t } = useTranslation();
-  const [projects, setProjects] = useState(sampleActs);
+  const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Pobranie projektów urzędnika z API
-  useEffect(() => {
-    if (!user?.id) return;
+  const formatDate = (date?: string) => {
+    if (!date) return "";
+    const parsed = new Date(date);
+    if (Number.isNaN(parsed.getTime())) return String(date);
+    return format(parsed, "d MMMM yyyy, HH:mm", { locale: pl });
+  };
 
-    apiGet(API_ENDPOINTS.ACTS.BY_OFFICER(user.id))
+  // Pobranie projektów urzędnika z API (teraz pełna lista, każdy może edytować)
+  useEffect(() => {
+    apiGet(API_ENDPOINTS.ACTS.LIST)
       .then(async (res) => {
         if (res.ok) {
           const data = await res.json();
-          setProjects(data);
+          const normalized = Array.isArray(data) ? data : [];
+          setProjects(normalized.length ? normalized : sampleActs);
         } else {
-          // Fallback do mockData
-          const myProjects = sampleActs.filter(
-            (act) =>
-              act.sponsor === "Minister Finansów" ||
-              act.sponsor === "Minister Cyfryzacji"
-          );
-          setProjects(myProjects);
+          setProjects(sampleActs);
         }
       })
       .catch(() => {
-        // Fallback do mockData
-        const myProjects = sampleActs.filter(
-          (act) =>
-            act.sponsor === "Minister Finansów" ||
-            act.sponsor === "Minister Cyfryzacji"
-        );
-        setProjects(myProjects);
+        setProjects(sampleActs);
       })
       .finally(() => setLoading(false));
-  }, [user?.id]);
+  }, []);
 
   if (
     !isAuthenticated ||
@@ -254,23 +250,40 @@ export default function OfficerProjectsPage() {
                       <p className="text-xs text-muted-foreground mb-1">
                         {t("officer.timeline.stage_label")}
                       </p>
-                      <p className="font-semibold">
-                        {project.currentStage} / {project.stages.length}
-                      </p>
-                      <div className="w-full bg-muted rounded-full h-2 mt-2">
-                        <div
-                          className="bg-primary h-2 rounded-full"
-                          style={{
-                            width: `${
-                              (project.currentStage / project.stages.length) *
-                              100
-                            }%`,
-                          }}
-                        />
-                      </div>
+                      {(() => {
+                        const stageCount = Array.isArray(project.stages)
+                          ? project.stages.length
+                          : 0;
+                        const currentStageNumber =
+                          typeof project.currentStage === "number"
+                            ? project.currentStage
+                            : 0;
+                        const progressPct = stageCount
+                          ? Math.min(
+                              100,
+                              Math.max(
+                                0,
+                                (currentStageNumber / stageCount) * 100
+                              )
+                            )
+                          : 0;
+                        return (
+                          <>
+                            <p className="font-semibold">
+                              {currentStageNumber} / {stageCount}
+                            </p>
+                            <div className="w-full bg-muted rounded-full h-2 mt-2">
+                              <div
+                                className="bg-primary h-2 rounded-full"
+                                style={{ width: `${progressPct}%` }}
+                              />
+                            </div>
+                          </>
+                        );
+                      })()}
                       <p className="text-xs text-muted-foreground mt-2">
-                        {t("officer.timeline.last_updated")}:{" "}
-                        {project.lastUpdated}
+                        {t("officer.timeline.last_updated")}: {" "}
+                        {formatDate(project.lastUpdated)}
                       </p>
                     </div>
 
@@ -286,15 +299,16 @@ export default function OfficerProjectsPage() {
                           {t("officer.actions.view")}
                         </Button>
                       </Link>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full gap-2"
-                        disabled
-                      >
-                        <Edit2 className="h-4 w-4" />
-                        {t("officer.actions.edit")}
-                      </Button>
+                      <Link to={`/edytor?actId=${project.id}`}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full gap-2"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                          {t("officer.actions.edit")}
+                        </Button>
+                      </Link>
                       <Button
                         variant="destructive"
                         size="sm"
