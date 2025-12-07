@@ -8,27 +8,36 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { sampleActs } from "@/data/mockData";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export default function OfficerProjectsPage() {
   const { user, isAuthenticated } = useAuth();
-  
+  const { t } = useTranslation();
+
   // Mock: projekty stworzone przez tego urzędnika
   const myProjects = sampleActs.filter(
-    (act) => act.sponsor === "Minister Finansów" || act.sponsor === "Minister Cyfryzacji"
+    (act) =>
+      act.sponsor === "Minister Finansów" ||
+      act.sponsor === "Minister Cyfryzacji"
   );
 
   const [projects, setProjects] = useState(myProjects);
 
-  if (!isAuthenticated || (user?.role !== "officer" && user?.role !== "admin")) {
+  if (
+    !isAuthenticated ||
+    (user?.role !== "officer" && user?.role !== "admin")
+  ) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold mb-4">Brak dostępu</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            {t("officer.access_denied.title")}
+          </h1>
           <p className="text-muted-foreground mb-6">
-            Ta strona jest dostępna tylko dla urzędników.
+            {t("officer.access_denied.description")}
           </p>
           <Link to="/" className="text-primary hover:underline">
-            Wróć do strony głównej
+            {t("officer.access_denied.back_home")}
           </Link>
         </div>
       </Layout>
@@ -65,23 +74,24 @@ export default function OfficerProjectsPage() {
     }
   };
 
+  // Labels using i18n
   const statusLabels: Record<string, string> = {
-    planowany: "Planowany",
-    procedowany: "Procedowany",
-    uchwalony: "Uchwalony",
-    odrzucony: "Odrzucony",
-    wycofany: "Wycofany",
+    planowany: t("status.planowany"),
+    procedowany: t("status.procedowany"),
+    uchwalony: t("status.uchwalony"),
+    odrzucony: t("status.odrzucony"),
+    wycofany: t("status.wycofany"),
   };
 
   const progressLabels: Record<string, string> = {
-    przyjety: "Przyjęty",
-    w_toku: "W toku",
-    archiwalny: "Archiwalny",
+    przyjety: t("progress.przyjety"),
+    w_toku: t("progress.w_toku"),
+    archiwalny: t("progress.archiwalny"),
   };
 
   const handleDelete = (id: string) => {
     setProjects(projects.filter((p) => p.id !== id));
-    toast.success("Projekt został usunięty");
+    toast.success(t("officer.toast.project_deleted"));
   };
 
   return (
@@ -90,15 +100,17 @@ export default function OfficerProjectsPage() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Moje Projekty</h1>
+            <h1 className="text-3xl font-bold mb-2">
+              {t("officer.header.title")}
+            </h1>
             <p className="text-muted-foreground">
-              Projekty utworzone przez Ciebie ({projects.length})
+              {t("officer.header.description", { count: projects.length })}
             </p>
           </div>
           <Link to="/edytor">
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              Nowy projekt
+              {t("officer.header.new_project")}
             </Button>
           </Link>
         </div>
@@ -108,8 +120,12 @@ export default function OfficerProjectsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">{projects.length}</div>
-                <p className="text-sm text-muted-foreground mt-2">Wszystkie projekty</p>
+                <div className="text-3xl font-bold text-primary">
+                  {projects.length}
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {t("officer.stats.all_projects")}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -119,7 +135,9 @@ export default function OfficerProjectsPage() {
                 <div className="text-3xl font-bold text-blue-600">
                   {projects.filter((p) => p.status === "procedowany").length}
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">Procedowane</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {t("officer.stats.in_progress")}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -129,7 +147,9 @@ export default function OfficerProjectsPage() {
                 <div className="text-3xl font-bold text-green-600">
                   {projects.filter((p) => p.status === "uchwalony").length}
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">Uchwalone</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {t("officer.stats.passed")}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -139,7 +159,9 @@ export default function OfficerProjectsPage() {
                 <div className="text-3xl font-bold text-orange-600">
                   {projects.filter((p) => p.hasConsultation).length}
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">W konsultacjach</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {t("officer.stats.in_consultation")}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -149,16 +171,21 @@ export default function OfficerProjectsPage() {
         {projects.length === 0 ? (
           <Card>
             <CardContent className="pt-12 text-center">
-              <p className="text-muted-foreground mb-6">Nie masz jeszcze żadnych projektów</p>
+              <p className="text-muted-foreground mb-6">
+                {t("officer.empty.no_projects")}
+              </p>
               <Link to="/edytor">
-                <Button>Utwórz pierwszy projekt</Button>
+                <Button>{t("officer.empty.create_first")}</Button>
               </Link>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
             {projects.map((project) => (
-              <Card key={project.id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={project.id}
+                className="hover:shadow-md transition-shadow"
+              >
                 <CardContent className="pt-6">
                   <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                     {/* Main info */}
@@ -173,19 +200,25 @@ export default function OfficerProjectsPage() {
                       </p>
                       <div className="flex gap-2 mt-3 flex-wrap">
                         <Badge className={getStatusColor(project.status)}>
-                          {statusLabels[project.status]}
+                          {statusLabels[project.status] || project.status}
                         </Badge>
                         <Badge className={getProgressColor(project.progress)}>
-                          {progressLabels[project.progress]}
+                          {progressLabels[project.progress] || project.progress}
                         </Badge>
                         {project.priority === "high" && (
-                          <Badge variant="outline" className="border-accent text-accent">
-                            Priorytet
+                          <Badge
+                            variant="outline"
+                            className="border-accent text-accent"
+                          >
+                            {t("officer.badges.priority")}
                           </Badge>
                         )}
                         {project.hasConsultation && (
-                          <Badge variant="outline" className="border-primary text-primary">
-                            Konsultacje
+                          <Badge
+                            variant="outline"
+                            className="border-primary text-primary"
+                          >
+                            {t("officer.badges.consultation")}
                           </Badge>
                         )}
                       </div>
@@ -193,7 +226,9 @@ export default function OfficerProjectsPage() {
 
                     {/* Timeline info */}
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Etap procedury</p>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {t("officer.timeline.stage_label")}
+                      </p>
                       <p className="font-semibold">
                         {project.currentStage} / {project.stages.length}
                       </p>
@@ -201,21 +236,29 @@ export default function OfficerProjectsPage() {
                         <div
                           className="bg-primary h-2 rounded-full"
                           style={{
-                            width: `${(project.currentStage / project.stages.length) * 100}%`,
+                            width: `${
+                              (project.currentStage / project.stages.length) *
+                              100
+                            }%`,
                           }}
                         />
                       </div>
                       <p className="text-xs text-muted-foreground mt-2">
-                        Ostatnia aktualizacja: {project.lastUpdated}
+                        {t("officer.timeline.last_updated")}:{" "}
+                        {project.lastUpdated}
                       </p>
                     </div>
 
                     {/* Actions */}
                     <div className="flex flex-col gap-2 justify-center">
                       <Link to={`/akt/${project.id}`}>
-                        <Button variant="outline" size="sm" className="w-full gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full gap-2"
+                        >
                           <Eye className="h-4 w-4" />
-                          Podgląd
+                          {t("officer.actions.view")}
                         </Button>
                       </Link>
                       <Button
@@ -225,7 +268,7 @@ export default function OfficerProjectsPage() {
                         disabled
                       >
                         <Edit2 className="h-4 w-4" />
-                        Edytuj
+                        {t("officer.actions.edit")}
                       </Button>
                       <Button
                         variant="destructive"
@@ -234,7 +277,7 @@ export default function OfficerProjectsPage() {
                         onClick={() => handleDelete(project.id)}
                       >
                         <Trash2 className="h-4 w-4" />
-                        Usuń
+                        {t("officer.actions.delete")}
                       </Button>
                     </div>
                   </div>

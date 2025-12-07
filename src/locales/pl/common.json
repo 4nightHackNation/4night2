@@ -79,5 +79,151 @@
   "status.activated": "aktywowane",
   "status.deactivated": "deaktywowane",
   "admin.update_account": "Zaktualizuj konto",
-  "admin.add_account": "Dodaj konto"
+  "admin.add_account": "Dodaj konto",
+  "admin.stats_total_accounts": "Całkowita liczba kont",
+  "admin.stats_active": "Aktywne",
+  "admin.stats_inactive": "Nieaktywne",
+  "admin.search_placeholder": "Szukaj po email lub nazwie...",
+  "admin.accounts_title": "Konta urzędników ({{count}})",
+  "admin.no_results": "Brak kont spełniających kryteria wyszukiwania",
+  "admin.no_accounts": "Brak kont do wyświetlenia",
+  "table.email": "Email",
+  "table.name": "Nazwa",
+  "table.role": "Rola",
+  "table.status": "Status",
+  "table.created": "Utworzone",
+  "table.actions": "Akcje",
+  "table.copy_credentials": "Kopiuj dane logowania",
+  "table.edit_account": "Edytuj konto",
+  "table.delete_account": "Usuń konto",
+  "admin.role_admin": "Administrator",
+  "admin.role_officer": "Urzędnik",
+  "status.active": "Aktywne",
+  "status.inactive": "Nieaktywne",
+  "admin.delete_title": "Usunąć konto?",
+  "admin.delete_description": "Czy jesteś pewny? Ta akcja nie może być cofnięta. Konto urzędnika zostanie trwale usunięte.",
+  "admin.cancel": "Anuluj",
+  "admin.delete": "Usuń",
+  "editor.breadcrumb_home": "Strona główna",
+  "editor.breadcrumb_new_act": "Nowy akt",
+  "editor.title_create_new_act": "Tworzenie nowego aktu prawnego",
+  "editor.basic.title": "Informacje podstawowe",
+  "editor.fields.title.label": "Tytuł aktu",
+  "editor.fields.title.placeholder": "Projekt ustawy o...",
+  "editor.fields.pdf.label": "Treść aktu (PDF)",
+  "editor.fields.pdf.choose_file": "Wybierz plik PDF",
+  "editor.fields.pdf.ogup_ai": "ogup ai",
+  "editor.fields.pdf.selected": "Wybrano",
+  "editor.fields.pdf.open_preview": "Otwórz podgląd PDF",
+  "editor.fields.pdf.remove_file": "Usuń plik",
+  "editor.fields.pdf.no_file": "Brak załadowanego PDF (opcjonalne)",
+  "editor.fields.summary.label": "Streszczenie",
+  "editor.fields.summary.placeholder": "Krótki opis celu i zakresu aktu...",
+  "editor.fields.category.label": "Kategoria",
+  "editor.select.category_placeholder": "Wybierz kategorię",
+  "editor.fields.sponsor.label": "Wnioskodawca",
+  "editor.select.sponsor_placeholder": "Wybierz wnioskodawcę",
+  "editor.fields.status.label": "Status",
+  "status.planowany": "Planowany",
+  "status.procedowany": "Procedowany",
+  "status.uchwalony": "Uchwalony",
+  "status.odrzucony": "Odrzucony",
+  "status.wycofany": "Wycofany",
+  "editor.fields.priority.label": "Priorytet",
+  "priority.low": "Niski",
+  "priority.normal": "Normalny",
+  "priority.high": "Wysoki",
+  "editor.consultations.title": "Konsultacje publiczne",
+  "editor.consultations.toggle_label": "Akt przewiduje konsultacje publiczne",
+  "editor.consultations.start": "Data rozpoczęcia",
+  "editor.consultations.end": "Data zakończenia",
+  "editor.stages.title": "Etapy procesu legislacyjnego",
+  "editor.stages.add_stage": "Dodaj etap",
+  "editor.stages.select_placeholder": "Wybierz etap",
+  "editor.actions.cancel": "Anuluj",
+  "editor.actions.save_act": "Zapisz akt",
+  "officer": {
+    "access_denied": {
+      "title": "Brak dostępu",
+      "description": "Ta strona jest dostępna tylko dla urzędników.",
+      "back_home": "Wróć do strony głównej"
+    },
+    "header": {
+      "title": "Moje Projekty",
+      "description": "Projekty utworzone przez Ciebie ({{count}})",
+      "new_project": "Nowy projekt"
+    },
+    "stats": {
+      "all_projects": "Wszystkie projekty",
+      "in_progress": "Procedowane",
+      "passed": "Uchwalone",
+      "in_consultation": "W konsultacjach"
+    },
+    "empty": {
+      "no_projects": "Nie masz jeszcze żadnych projektów",
+      "create_first": "Utwórz pierwszy projekt"
+    },
+    "badges": {
+      "priority": "Priorytet",
+      "consultation": "Konsultacje"
+    },
+    "timeline": {
+      "stage_label": "Etap procedury",
+      "last_updated": "Ostatnia aktualizacja"
+    },
+    "actions": {
+      "view": "Podgląd",
+      "edit": "Edytuj",
+      "delete": "Usuń"
+    },
+    "toast": {
+      "project_deleted": "Projekt został usunięty"
+    }
+  },
+
+  "status": {
+    "planowany": "Planowany",
+    "procedowany": "Procedowany",
+    "uchwalony": "Uchwalony",
+    "odrzucony": "Odrzucony",
+    "wycofany": "Wycofany"
+  },
+
+  "progress": {
+    "przyjety": "Przyjęty",
+    "w_toku": "W toku",
+    "archiwalny": "Archiwalny"
+  },
+  "citizen": {
+    "access_denied": {
+      "title": "Brak dostępu",
+      "description": "Ta strona jest dostępna tylko dla zalogowanych obywateli.",
+      "back_home": "Wróć do strony głównej"
+    },
+    "header": {
+      "title": "Mój profil",
+      "email": "Email"
+    },
+    "tabs": {
+      "subscriptions": "Subskrypcje",
+      "projects": "Śledzone projekty"
+    },
+    "subscriptions": {
+      "title": "Zasubskrybowane kategorie",
+      "empty": "Nie subskrybujesz żadnych kategorii",
+      "empty_hint": "Kliknij poniżej aby dodać subskrypcje",
+      "add_new_title": "Dodaj nowe subskrypcje",
+      "category_count": "{{count}} projektów",
+      "save_button": "Zapisz subskrypcje kategorii"
+    },
+    "projects": {
+      "tracking_title": "Śledzone projekty w konsultacjach publicznych",
+      "empty": "Nie śledzisz żadnych projektów",
+      "empty_hint": "Kliknij poniżej aby dodać projekty do śledzenia",
+      "available_title": "Dostępne projekty w konsultacjach",
+      "all_tracked": "Wszystkie projekty w konsultacjach są już śledzone",
+      "consultation_until": "Konsultacje do {{date}}",
+      "save_button": "Zapisz śledzenie projektów"
+    }
+  }
 }

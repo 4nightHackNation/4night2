@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Bell, Trash2, Plus, X, Check } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -7,23 +7,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { categories, sampleActs } from "@/data/mockData";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export default function CitizenProfilePage() {
   const { user, isAuthenticated, updateSubscriptions } = useAuth();
-  const [activeTab, setActiveTab] = useState<"subscriptions" | "projects">("subscriptions");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(user?.subscriptions || []);
-  const [selectedProjects, setSelectedProjects] = useState<string[]>(user?.subscriptions || []);
+  const { t } = useTranslation();
+
+  const [activeTab, setActiveTab] = useState<"subscriptions" | "projects">(
+    "subscriptions"
+  );
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    user?.subscriptions || []
+  );
+  const [selectedProjects, setSelectedProjects] = useState<string[]>(
+    user?.subscriptions || []
+  );
 
   if (!isAuthenticated || user?.role !== "citizen") {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold mb-4">Brak dostępu</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            {t("citizen.access_denied.title")}
+          </h1>
           <p className="text-muted-foreground mb-6">
-            Ta strona jest dostępna tylko dla zalogowanych obywateli.
+            {t("citizen.access_denied.description")}
           </p>
           <Link to="/" className="text-primary hover:underline">
-            Wróć do strony głównej
+            {t("citizen.access_denied.back_home")}
           </Link>
         </div>
       </Layout>
@@ -45,7 +56,9 @@ export default function CitizenProfilePage() {
   };
 
   const handleSaveSubscriptions = () => {
-    const allSubscriptions = [...new Set([...selectedCategories, ...selectedProjects])];
+    const allSubscriptions = [
+      ...new Set([...selectedCategories, ...selectedProjects]),
+    ];
     updateSubscriptions(allSubscriptions);
   };
 
@@ -58,9 +71,12 @@ export default function CitizenProfilePage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Mój profil</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            {t("citizen.header.title")}
+          </h1>
           <p className="text-muted-foreground">
-            Email: <span className="font-medium text-foreground">{user?.email}</span>
+            {t("citizen.header.email")}:{" "}
+            <span className="font-medium text-foreground">{user?.email}</span>
           </p>
         </div>
 
@@ -76,7 +92,7 @@ export default function CitizenProfilePage() {
             )}
           >
             <Bell className="inline h-4 w-4 mr-2" />
-            Subskrypcje
+            {t("citizen.tabs.subscriptions")}
           </button>
           <button
             onClick={() => setActiveTab("projects")}
@@ -87,7 +103,7 @@ export default function CitizenProfilePage() {
                 : "border-transparent text-muted-foreground hover:text-foreground"
             )}
           >
-            Śledzone projekty
+            {t("citizen.tabs.projects")}
           </button>
         </div>
 
@@ -96,13 +112,17 @@ export default function CitizenProfilePage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Zasubskrybowane kategorie</CardTitle>
+                <CardTitle>{t("citizen.subscriptions.title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {selectedCategories.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">Nie subskrybujesz żadnych kategorii</p>
-                    <p className="text-sm text-muted-foreground mt-2">Kliknij poniżej aby dodać subskrypcje</p>
+                    <p className="text-muted-foreground">
+                      {t("citizen.subscriptions.empty")}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {t("citizen.subscriptions.empty_hint")}
+                    </p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -117,7 +137,11 @@ export default function CitizenProfilePage() {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <p className="font-medium">{category.name}</p>
-                              <p className="text-xs text-muted-foreground mt-1">{category.count} projektów</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {t("citizen.subscriptions.category_count", {
+                                  count: category.count,
+                                })}
+                              </p>
                             </div>
                             <Check className="h-5 w-5 text-primary ml-2 flex-shrink-0" />
                           </div>
@@ -128,7 +152,9 @@ export default function CitizenProfilePage() {
 
                 <Card className="bg-muted/50 border-muted">
                   <CardHeader>
-                    <CardTitle className="text-base">Dodaj nowe subskrypcje</CardTitle>
+                    <CardTitle className="text-base">
+                      {t("citizen.subscriptions.add_new_title")}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -143,7 +169,11 @@ export default function CitizenProfilePage() {
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <p className="font-medium">{category.name}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{category.count} projektów</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {t("citizen.subscriptions.category_count", {
+                                    count: category.count,
+                                  })}
+                                </p>
                               </div>
                             </div>
                           </button>
@@ -152,8 +182,11 @@ export default function CitizenProfilePage() {
                   </CardContent>
                 </Card>
 
-                <Button onClick={handleSaveSubscriptions} className="w-full mt-6">
-                  Zapisz subskrypcje kategorii
+                <Button
+                  onClick={handleSaveSubscriptions}
+                  className="w-full mt-6"
+                >
+                  {t("citizen.subscriptions.save_button")}
                 </Button>
               </CardContent>
             </Card>
@@ -165,13 +198,17 @@ export default function CitizenProfilePage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Śledzone projekty w konsultacjach publicznych</CardTitle>
+                <CardTitle>{t("citizen.projects.tracking_title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {selectedProjects.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">Nie śledzisz żadnych projektów</p>
-                    <p className="text-sm text-muted-foreground mt-2">Kliknij poniżej aby dodać projekty do śledzenia</p>
+                    <p className="text-muted-foreground">
+                      {t("citizen.projects.empty")}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {t("citizen.projects.empty_hint")}
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3 mb-6">
@@ -185,9 +222,14 @@ export default function CitizenProfilePage() {
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <p className="font-medium line-clamp-1">{act.title}</p>
+                              <p className="font-medium line-clamp-1">
+                                {act.title}
+                              </p>
                               <p className="text-xs text-muted-foreground mt-1">
-                                {act.sponsor} • Konsultacje do {act.consultationEnd}
+                                {act.sponsor} •{" "}
+                                {t("citizen.projects.consultation_until", {
+                                  date: act.consultationEnd,
+                                })}
                               </p>
                             </div>
                             <Check className="h-5 w-5 text-primary ml-2 flex-shrink-0" />
@@ -199,12 +241,16 @@ export default function CitizenProfilePage() {
 
                 <Card className="bg-muted/50 border-muted">
                   <CardHeader>
-                    <CardTitle className="text-base">Dostępne projekty w konsultacjach</CardTitle>
+                    <CardTitle className="text-base">
+                      {t("citizen.projects.available_title")}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {consultationActs.filter((act) => !selectedProjects.includes(act.id)).length === 0 ? (
+                    {consultationActs.filter(
+                      (act) => !selectedProjects.includes(act.id)
+                    ).length === 0 ? (
                       <p className="text-muted-foreground text-sm">
-                        Wszystkie projekty w konsultacjach są już śledzone
+                        {t("citizen.projects.all_tracked")}
                       </p>
                     ) : (
                       <div className="space-y-3">
@@ -218,9 +264,14 @@ export default function CitizenProfilePage() {
                             >
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                  <p className="font-medium line-clamp-1">{act.title}</p>
+                                  <p className="font-medium line-clamp-1">
+                                    {act.title}
+                                  </p>
                                   <p className="text-xs text-muted-foreground mt-1">
-                                    {act.sponsor} • Konsultacje do {act.consultationEnd}
+                                    {act.sponsor} •{" "}
+                                    {t("citizen.projects.consultation_until", {
+                                      date: act.consultationEnd,
+                                    })}
                                   </p>
                                 </div>
                               </div>
@@ -231,8 +282,11 @@ export default function CitizenProfilePage() {
                   </CardContent>
                 </Card>
 
-                <Button onClick={handleSaveSubscriptions} className="w-full mt-6">
-                  Zapisz śledzenie projektów
+                <Button
+                  onClick={handleSaveSubscriptions}
+                  className="w-full mt-6"
+                >
+                  {t("citizen.projects.save_button")}
                 </Button>
               </CardContent>
             </Card>

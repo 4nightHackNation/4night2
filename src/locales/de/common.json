@@ -79,5 +79,151 @@
   "status.activated": "aktiviert",
   "status.deactivated": "deaktiviert",
   "admin.update_account": "Konto aktualisieren",
-  "admin.add_account": "Konto hinzufügen"
+  "admin.add_account": "Konto hinzufügen",
+  "admin.stats_total_accounts": "Gesamtanzahl der Konten",
+  "admin.stats_active": "Aktive",
+  "admin.stats_inactive": "Inaktive",
+  "admin.search_placeholder": "Suche nach Name oder E-Mail...",
+  "admin.accounts_title": "Behördenkonten ({{count}})",
+  "admin.no_results": "Keine Konten entsprechen den Suchkriterien",
+  "admin.no_accounts": "Keine Konten zum Anzeigen",
+  "table.email": "E-Mail",
+  "table.name": "Name",
+  "table.role": "Rolle",
+  "table.status": "Status",
+  "table.created": "Erstellt",
+  "table.actions": "Aktionen",
+  "table.copy_credentials": "Anmeldedaten kopieren",
+  "table.edit_account": "Konto bearbeiten",
+  "table.delete_account": "Konto löschen",
+  "admin.role_admin": "Administrator",
+  "admin.role_officer": "Beamter",
+  "status.active": "Aktiv",
+  "status.inactive": "Inaktiv",
+  "admin.delete_title": "Konto löschen?",
+  "admin.delete_description": "Bist du sicher? Diese Aktion kann nicht rückgängig gemacht werden. Das Behördenkonto wird dauerhaft gelöscht.",
+  "admin.cancel": "Abbrechen",
+  "admin.delete": "Löschen",
+  "editor.breadcrumb_home": "Startseite",
+  "editor.breadcrumb_new_act": "Neuer Akt",
+  "editor.title_create_new_act": "Erstellung eines neuen Gesetzesakts",
+  "editor.basic.title": "Grundlegende Informationen",
+  "editor.fields.title.label": "Titel des Aktes",
+  "editor.fields.title.placeholder": "Gesetzentwurf über...",
+  "editor.fields.pdf.label": "Inhalt des Aktes (PDF)",
+  "editor.fields.pdf.choose_file": "PDF-Datei auswählen",
+  "editor.fields.pdf.ogup_ai": "ogup ai",
+  "editor.fields.pdf.selected": "Ausgewählt",
+  "editor.fields.pdf.open_preview": "PDF-Vorschau öffnen",
+  "editor.fields.pdf.remove_file": "Datei entfernen",
+  "editor.fields.pdf.no_file": "Kein PDF hochgeladen (optional)",
+  "editor.fields.summary.label": "Zusammenfassung",
+  "editor.fields.summary.placeholder": "Kurze Beschreibung des Zwecks und Umfangs des Aktes...",
+  "editor.fields.category.label": "Kategorie",
+  "editor.select.category_placeholder": "Kategorie auswählen",
+  "editor.fields.sponsor.label": "Antragsteller",
+  "editor.select.sponsor_placeholder": "Antragsteller auswählen",
+  "editor.fields.status.label": "Status",
+  "status.planowany": "Geplant",
+  "status.procedowany": "In Bearbeitung",
+  "status.uchwalony": "Verabschiedet",
+  "status.odrzucony": "Abgelehnt",
+  "status.wycofany": "Zurückgezogen",
+  "editor.fields.priority.label": "Priorität",
+  "priority.low": "Niedrig",
+  "priority.normal": "Normal",
+  "priority.high": "Hoch",
+  "editor.consultations.title": "Öffentliche Konsultationen",
+  "editor.consultations.toggle_label": "Der Akt beinhaltet öffentliche Konsultationen",
+  "editor.consultations.start": "Startdatum",
+  "editor.consultations.end": "Enddatum",
+  "editor.stages.title": "Phasen des Gesetzgebungsverfahrens",
+  "editor.stages.add_stage": "Phase hinzufügen",
+  "editor.stages.select_placeholder": "Phase auswählen",
+  "editor.actions.cancel": "Abbrechen",
+  "editor.actions.save_act": "Akt speichern",
+  "officer": {
+    "access_denied": {
+      "title": "Zugriff verweigert",
+      "description": "Diese Seite ist nur für Beamte zugänglich.",
+      "back_home": "Zur Startseite zurückkehren"
+    },
+    "header": {
+      "title": "Meine Projekte",
+      "description": "Von dir erstellte Projekte ({{count}})",
+      "new_project": "Neues Projekt"
+    },
+    "stats": {
+      "all_projects": "Alle Projekte",
+      "in_progress": "In Bearbeitung",
+      "passed": "Verabschiedet",
+      "in_consultation": "In Konsultation"
+    },
+    "empty": {
+      "no_projects": "Du hast noch keine Projekte",
+      "create_first": "Erstelle dein erstes Projekt"
+    },
+    "badges": {
+      "priority": "Priorität",
+      "consultation": "Konsultationen"
+    },
+    "timeline": {
+      "stage_label": "Verfahrensphase",
+      "last_updated": "Zuletzt aktualisiert"
+    },
+    "actions": {
+      "view": "Vorschau",
+      "edit": "Bearbeiten",
+      "delete": "Löschen"
+    },
+    "toast": {
+      "project_deleted": "Projekt wurde gelöscht"
+    }
+  },
+
+  "status": {
+    "planowany": "Geplant",
+    "procedowany": "In Bearbeitung",
+    "uchwalony": "Verabschiedet",
+    "odrzucony": "Abgelehnt",
+    "wycofany": "Zurückgezogen"
+  },
+
+  "progress": {
+    "przyjety": "Angenommen",
+    "w_toku": "Laufend",
+    "archiwalny": "Archiviert"
+  },
+  "citizen": {
+    "access_denied": {
+      "title": "Zugriff verweigert",
+      "description": "Diese Seite ist nur für eingeloggte Bürger zugänglich.",
+      "back_home": "Zur Startseite zurückkehren"
+    },
+    "header": {
+      "title": "Mein Profil",
+      "email": "E-Mail"
+    },
+    "tabs": {
+      "subscriptions": "Abonnements",
+      "projects": "Verfolgte Projekte"
+    },
+    "subscriptions": {
+      "title": "Abonnierte Kategorien",
+      "empty": "Du abonnierst derzeit keine Kategorien",
+      "empty_hint": "Klicke unten, um neue Abonnements hinzuzufügen",
+      "add_new_title": "Neue Abonnements hinzufügen",
+      "category_count": "{{count}} Projekte",
+      "save_button": "Kategorie-Abonnements speichern"
+    },
+    "projects": {
+      "tracking_title": "Verfolgte Projekte in öffentlichen Konsultationen",
+      "empty": "Du verfolgst derzeit keine Projekte",
+      "empty_hint": "Klicke unten, um Projekte zur Verfolgung hinzuzufügen",
+      "available_title": "Verfügbare Projekte in Konsultationen",
+      "all_tracked": "Alle Projekte in Konsultationen werden bereits verfolgt",
+      "consultation_until": "Konsultationen bis {{date}}",
+      "save_button": "Verfolgte Projekte speichern"
+    }
+  }
 }

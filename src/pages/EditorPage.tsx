@@ -22,6 +22,7 @@ import {
   legislativeStages,
 } from "@/data/mockData";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 type StatusType =
   | "planowany"
@@ -51,6 +52,8 @@ export default function EditorPage() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const { t } = useTranslation("common");
 
   const [formData, setFormData] = useState<FormState>({
     id: `PL_2025_${String(Math.floor(Math.random() * 900) + 100)}`,
@@ -215,10 +218,12 @@ export default function EditorPage() {
               to="/"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              Strona główna
+              {t("editor.breadcrumb_home")}
             </Link>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            <span className="text-foreground font-medium">Nowy akt</span>
+            <span className="text-foreground font-medium">
+              {t("editor.breadcrumb_new_act")}
+            </span>
           </nav>
         </div>
       </div>
@@ -226,26 +231,26 @@ export default function EditorPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl lg:text-3xl font-bold mb-8">
-            Tworzenie nowego aktu prawnego
+            {t("editor.title_create_new_act")}
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Basic info */}
             <div className="gov-card">
               <h2 className="text-lg font-semibold mb-6">
-                Informacje podstawowe
+                {t("editor.basic.title")}
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <Label htmlFor="title" className="text-base">
-                    Tytuł aktu *
+                    {t("editor.fields.title.label")} *
                   </Label>
                   <Input
                     id="title"
                     value={formData.title}
                     onChange={(e) => handleChange("title", e.target.value)}
-                    placeholder="Projekt ustawy o..."
+                    placeholder={t("editor.fields.title.placeholder")}
                     className="mt-2 h-12"
                     required
                   />
@@ -253,7 +258,7 @@ export default function EditorPage() {
 
                 <div className="md:col-span-2">
                   <Label htmlFor="pdfFile" className="text-base">
-                    Treść aktu (PDF)
+                    {t("editor.fields.pdf.label")}
                   </Label>
 
                   {/* custom upload: label changes border on hover, cursor pointer; input invisible overlay */}
@@ -261,18 +266,18 @@ export default function EditorPage() {
                     <label
                       htmlFor="pdfFile"
                       className="
-                        flex items-center justify-center h-12 px-4 rounded-md
-                        border border-border
-                        text-sm text-foreground
-                        cursor-pointer
-                        transition-colors duration-150
-                        hover:border-primary
-                        group-hover:bg-primary
-                        group-hover:text-primary-foreground
-                        group-hover:border-primary
-                      "
+            flex items-center justify-center h-12 px-4 rounded-md
+            border border-border
+            text-sm text-foreground
+            cursor-pointer
+            transition-colors duration-150
+            hover:border-primary
+            group-hover:bg-primary
+            group-hover:text-primary-foreground
+            group-hover:border-primary
+          "
                     >
-                      Wybierz plik PDF
+                      {t("editor.fields.pdf.choose_file")}
                     </label>
 
                     <input
@@ -287,14 +292,15 @@ export default function EditorPage() {
 
                   <div className="mt-2">
                     <Button type="button" variant="outline" size="sm">
-                      ogup ai
+                      {t("editor.fields.pdf.ogup_ai")}
                     </Button>
                   </div>
 
                   {formData.pdfFile ? (
                     <div className="mt-2">
                       <p className="text-sm text-muted-foreground">
-                        Wybrano: {formData.pdfFile.name} —{" "}
+                        {t("editor.fields.pdf.selected")}:{" "}
+                        {formData.pdfFile.name} —{" "}
                         {Math.round(formData.pdfFile.size / 1024)} KB
                       </p>
 
@@ -305,7 +311,7 @@ export default function EditorPage() {
                             variant="outline"
                             onClick={() => window.open(previewUrl, "_blank")}
                           >
-                            Otwórz podgląd PDF
+                            {t("editor.fields.pdf.open_preview")}
                           </Button>
                         )}
                         <Button
@@ -317,40 +323,42 @@ export default function EditorPage() {
                             handleChange("pdfFile", null);
                           }}
                         >
-                          Usuń plik
+                          {t("editor.fields.pdf.remove_file")}
                         </Button>
                       </div>
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground mt-2">
-                      Brak załadowanego PDF (opcjonalne)
+                      {t("editor.fields.pdf.no_file")}
                     </p>
                   )}
                 </div>
 
                 <div className="md:col-span-2">
                   <Label htmlFor="summary" className="text-base">
-                    Streszczenie
+                    {t("editor.fields.summary.label")}
                   </Label>
                   <Textarea
                     id="summary"
                     value={formData.summary}
                     onChange={(e) => handleChange("summary", e.target.value)}
-                    placeholder="Krótki opis celu i zakresu aktu..."
+                    placeholder={t("editor.fields.summary.placeholder")}
                     className="mt-2 min-h-[120px]"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="category" className="text-base">
-                    Kategoria *
+                    {t("editor.fields.category.label")} *
                   </Label>
                   <Select
                     value={formData.category}
                     onValueChange={(v) => handleChange("category", v)}
                   >
                     <SelectTrigger className="mt-2 h-12">
-                      <SelectValue placeholder="Wybierz kategorię" />
+                      <SelectValue
+                        placeholder={t("editor.select.category_placeholder")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((cat) => (
@@ -364,14 +372,16 @@ export default function EditorPage() {
 
                 <div>
                   <Label htmlFor="sponsor" className="text-base">
-                    Wnioskodawca *
+                    {t("editor.fields.sponsor.label")} *
                   </Label>
                   <Select
                     value={formData.sponsor}
                     onValueChange={(v) => handleChange("sponsor", v)}
                   >
                     <SelectTrigger className="mt-2 h-12">
-                      <SelectValue placeholder="Wybierz wnioskodawcę" />
+                      <SelectValue
+                        placeholder={t("editor.select.sponsor_placeholder")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {sponsors.map((sponsor) => (
@@ -385,7 +395,7 @@ export default function EditorPage() {
 
                 <div>
                   <Label htmlFor="status" className="text-base">
-                    Status
+                    {t("editor.fields.status.label")}
                   </Label>
                   <Select
                     value={formData.status}
@@ -397,7 +407,7 @@ export default function EditorPage() {
                     <SelectContent>
                       {filterOptions.status.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
+                          {t(`status.${opt.value}`, opt.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -406,7 +416,7 @@ export default function EditorPage() {
 
                 <div>
                   <Label htmlFor="priority" className="text-base">
-                    Priorytet
+                    {t("editor.fields.priority.label")}
                   </Label>
                   <Select
                     value={formData.priority}
@@ -416,9 +426,11 @@ export default function EditorPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Niski</SelectItem>
-                      <SelectItem value="normal">Normalny</SelectItem>
-                      <SelectItem value="high">Wysoki</SelectItem>
+                      <SelectItem value="low">{t("priority.low")}</SelectItem>
+                      <SelectItem value="normal">
+                        {t("priority.normal")}
+                      </SelectItem>
+                      <SelectItem value="high">{t("priority.high")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -428,7 +440,7 @@ export default function EditorPage() {
             {/* Consultations */}
             <div className="gov-card">
               <h2 className="text-lg font-semibold mb-6">
-                Konsultacje publiczne
+                {t("editor.consultations.title")}
               </h2>
 
               <div className="flex items-center gap-4 mb-6">
@@ -441,14 +453,16 @@ export default function EditorPage() {
                   htmlFor="hasConsultation"
                   className="text-base cursor-pointer"
                 >
-                  Akt przewiduje konsultacje publiczne
+                  {t("editor.consultations.toggle_label")}
                 </Label>
               </div>
 
               {formData.hasConsultation && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="consultationStart">Data rozpoczęcia</Label>
+                    <Label htmlFor="consultationStart">
+                      {t("editor.consultations.start")}
+                    </Label>
                     <Input
                       id="consultationStart"
                       type="date"
@@ -460,7 +474,9 @@ export default function EditorPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="consultationEnd">Data zakończenia</Label>
+                    <Label htmlFor="consultationEnd">
+                      {t("editor.consultations.end")}
+                    </Label>
                     <Input
                       id="consultationEnd"
                       type="date"
@@ -479,7 +495,7 @@ export default function EditorPage() {
             <div className="gov-card">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold">
-                  Etapy procesu legislacyjnego
+                  {t("editor.stages.title")}
                 </h2>
                 <Button
                   type="button"
@@ -487,7 +503,8 @@ export default function EditorPage() {
                   size="sm"
                   onClick={addStage}
                 >
-                  <Plus className="h-4 w-4 mr-2" /> Dodaj etap
+                  <Plus className="h-4 w-4 mr-2" />{" "}
+                  {t("editor.stages.add_stage")}
                 </Button>
               </div>
 
@@ -506,7 +523,9 @@ export default function EditorPage() {
                         onValueChange={(v) => updateStage(stage.id, "name", v)}
                       >
                         <SelectTrigger className="h-11">
-                          <SelectValue placeholder="Wybierz etap" />
+                          <SelectValue
+                            placeholder={t("editor.stages.select_placeholder")}
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {legislativeStages.map((s) => (
@@ -550,13 +569,13 @@ export default function EditorPage() {
                 variant="outline"
                 onClick={() => navigate("/")}
               >
-                Anuluj
+                {t("editor.actions.cancel")}
               </Button>
               <Button
                 type="submit"
                 className="bg-primary hover:bg-gov-navy-dark"
               >
-                <Save className="h-5 w-5 mr-2" /> Zapisz akt
+                <Save className="h-5 w-5 mr-2" /> {t("editor.actions.save_act")}
               </Button>
             </div>
           </form>

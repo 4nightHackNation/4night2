@@ -104,7 +104,7 @@ export default function AdminManagementPage() {
     setEditingId(null);
   };
 
-  const { t } = useTranslation("common"); // lub inny namespace, którego używasz
+  const { t } = useTranslation("common");
 
   const handleGeneratePassword = () => {
     setFormData({ ...formData, password: generatePassword() });
@@ -361,28 +361,34 @@ export default function AdminManagementPage() {
                   {officers.length}
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Całkowicie kont
+                  {t("admin.stats_total_accounts")}
                 </p>
               </div>
             </CardContent>
           </Card>
+
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600">
                   {officers.filter((o) => o.status === "active").length}
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">Aktywne</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {t("admin.stats_active")}
+                </p>
               </div>
             </CardContent>
           </Card>
+
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-red-600">
                   {officers.filter((o) => o.status === "inactive").length}
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">Nieaktywne</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {t("admin.stats_inactive")}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -392,7 +398,7 @@ export default function AdminManagementPage() {
         <div className="mb-6">
           <Input
             type="search"
-            placeholder="Szukaj po email lub nazwie..."
+            placeholder={t("admin.search_placeholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="h-10"
@@ -402,37 +408,37 @@ export default function AdminManagementPage() {
         {/* Accounts Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Konta urzędników ({filteredOfficers.length})</CardTitle>
+            <CardTitle>
+              {t("admin.accounts_title", { count: filteredOfficers.length })}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               {filteredOfficers.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  {searchTerm
-                    ? "Brak kont spełniających kryteria wyszukiwania"
-                    : "Brak kont do wyświetlenia"}
+                  {searchTerm ? t("admin.no_results") : t("admin.no_accounts")}
                 </div>
               ) : (
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
                       <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">
-                        Email
+                        {t("table.email")}
                       </th>
                       <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">
-                        Nazwa
+                        {t("table.name")}
                       </th>
                       <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">
-                        Rola
+                        {t("table.role")}
                       </th>
                       <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">
-                        Status
+                        {t("table.status")}
                       </th>
                       <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">
-                        Utworzone
+                        {t("table.created")}
                       </th>
                       <th className="text-right py-3 px-4 font-medium text-sm text-muted-foreground">
-                        Akcje
+                        {t("table.actions")}
                       </th>
                     </tr>
                   </thead>
@@ -455,8 +461,8 @@ export default function AdminManagementPage() {
                             }`}
                           >
                             {officer.role === "admin"
-                              ? "Administrator"
-                              : "Urzędnik"}
+                              ? t("admin.role_admin")
+                              : t("admin.role_officer")}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-sm">
@@ -473,6 +479,10 @@ export default function AdminManagementPage() {
                                     : o
                                 )
                               );
+                              const statusKey =
+                                newStatus === "active"
+                                  ? "status.activated"
+                                  : "status.deactivated";
                               toast.success(
                                 t("admin.account_status_changed", {
                                   status: t(statusKey),
@@ -484,12 +494,16 @@ export default function AdminManagementPage() {
                             {officer.status === "active" ? (
                               <>
                                 <CheckCircle className="h-4 w-4 text-green-600" />
-                                <span className="text-green-600">Aktywne</span>
+                                <span className="text-green-600">
+                                  {t("status.active")}
+                                </span>
                               </>
                             ) : (
                               <>
                                 <XCircle className="h-4 w-4 text-red-600" />
-                                <span className="text-red-600">Nieaktywne</span>
+                                <span className="text-red-600">
+                                  {t("status.inactive")}
+                                </span>
                               </>
                             )}
                           </button>
@@ -502,21 +516,21 @@ export default function AdminManagementPage() {
                             <button
                               onClick={() => handleCopyCredentials(officer)}
                               className="text-blue-600 hover:text-blue-700 transition-colors p-1 hover:bg-blue-50 rounded"
-                              title="Kopiuj dane logowania"
+                              title={t("table.copy_credentials")}
                             >
                               <Copy className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleEditOfficer(officer)}
                               className="text-amber-600 hover:text-amber-700 transition-colors p-1 hover:bg-amber-50 rounded"
-                              title="Edytuj konto"
+                              title={t("table.edit_account")}
                             >
                               <Edit2 className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => setDeleteId(officer.id)}
                               className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
-                              title="Usuń konto"
+                              title={t("table.delete_account")}
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -538,19 +552,20 @@ export default function AdminManagementPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Usunąć konto?</AlertDialogTitle>
+              <AlertDialogTitle>{t("admin.delete_title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Czy jesteś pewny? Ta akcja nie może być cofnięta. Konto
-                urzędnika zostanie trwale usunięte.
+                {t("admin.delete_description")}
               </AlertDialogDescription>
             </AlertDialogHeader>
+
             <div className="flex gap-4">
-              <AlertDialogCancel>Anuluj</AlertDialogCancel>
+              <AlertDialogCancel>{t("admin.cancel")}</AlertDialogCancel>
+
               <AlertDialogAction
                 onClick={() => deleteId && handleDeleteOfficer(deleteId)}
                 className="bg-red-600 hover:bg-red-700"
               >
-                Usuń
+                {t("admin.delete")}
               </AlertDialogAction>
             </div>
           </AlertDialogContent>

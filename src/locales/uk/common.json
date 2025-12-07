@@ -79,5 +79,151 @@
   "status.activated": "активовано",
   "status.deactivated": "деактивовано",
   "admin.update_account": "Оновити обліковий запис",
-  "admin.add_account": "Додати обліковий запис"
+  "admin.add_account": "Додати обліковий запис",
+  "admin.stats_total_accounts": "Загальна кількість облікових записів",
+  "admin.stats_active": "Активні",
+  "admin.stats_inactive": "Неактивні",
+  "admin.search_placeholder": "Пошук за ім'ям або email...",
+  "admin.accounts_title": "Облікові записи посадовців ({{count}})",
+  "admin.no_results": "Немає записів, що відповідають критеріям пошуку",
+  "admin.no_accounts": "Немає записів для відображення",
+  "table.email": "Email",
+  "table.name": "Ім’я",
+  "table.role": "Роль",
+  "table.status": "Статус",
+  "table.created": "Створено",
+  "table.actions": "Дії",
+  "table.copy_credentials": "Скопіювати дані для входу",
+  "table.edit_account": "Редагувати обліковий запис",
+  "table.delete_account": "Видалити обліковий запис",
+  "admin.role_admin": "Адміністратор",
+  "admin.role_officer": "Посадовець",
+  "status.active": "Активне",
+  "status.inactive": "Неактивне",
+  "admin.delete_title": "Видалити обліковий запис?",
+  "admin.delete_description": "Ви впевнені? Цю дію неможливо скасувати. Обліковий запис посадовця буде безповоротно видалено.",
+  "admin.cancel": "Скасувати",
+  "admin.delete": "Видалити",
+  "editor.breadcrumb_home": "Головна",
+  "editor.breadcrumb_new_act": "Новий акт",
+  "editor.title_create_new_act": "Створення нового нормативного акта",
+  "editor.basic.title": "Основна інформація",
+  "editor.fields.title.label": "Назва акта",
+  "editor.fields.title.placeholder": "Проєкт закону про...",
+  "editor.fields.pdf.label": "Текст акта (PDF)",
+  "editor.fields.pdf.choose_file": "Вибрати PDF-файл",
+  "editor.fields.pdf.ogup_ai": "ogup ai",
+  "editor.fields.pdf.selected": "Вибрано",
+  "editor.fields.pdf.open_preview": "Відкрити попередній перегляд PDF",
+  "editor.fields.pdf.remove_file": "Видалити файл",
+  "editor.fields.pdf.no_file": "PDF не завантажено (необов’язково)",
+  "editor.fields.summary.label": "Стислий опис",
+  "editor.fields.summary.placeholder": "Короткий опис мети та змісту акта...",
+  "editor.fields.category.label": "Категорія",
+  "editor.select.category_placeholder": "Виберіть категорію",
+  "editor.fields.sponsor.label": "Ініціатор",
+  "editor.select.sponsor_placeholder": "Виберіть ініціатора",
+  "editor.fields.status.label": "Статус",
+  "status.planowany": "Запланований",
+  "status.procedowany": "У процесі",
+  "status.uchwalony": "Прийнятий",
+  "status.odrzucony": "Відхилений",
+  "status.wycofany": "Відкликаний",
+  "editor.fields.priority.label": "Пріоритет",
+  "priority.low": "Низький",
+  "priority.normal": "Нормальний",
+  "priority.high": "Високий",
+  "editor.consultations.title": "Громадські консультації",
+  "editor.consultations.toggle_label": "Акт передбачає проведення громадських консультацій",
+  "editor.consultations.start": "Дата початку",
+  "editor.consultations.end": "Дата завершення",
+  "editor.stages.title": "Етапи законодавчого процесу",
+  "editor.stages.add_stage": "Додати етап",
+  "editor.stages.select_placeholder": "Виберіть етап",
+  "editor.actions.cancel": "Скасувати",
+  "editor.actions.save_act": "Зберегти акт",
+  "officer": {
+    "access_denied": {
+      "title": "Доступ заборонено",
+      "description": "Ця сторінка доступна лише для посадовців.",
+      "back_home": "Повернутися на головну"
+    },
+    "header": {
+      "title": "Мої проєкти",
+      "description": "Створені вами проєкти ({{count}})",
+      "new_project": "Новий проєкт"
+    },
+    "stats": {
+      "all_projects": "Усі проєкти",
+      "in_progress": "У процесі",
+      "passed": "Прийняті",
+      "in_consultation": "На консультації"
+    },
+    "empty": {
+      "no_projects": "У вас ще немає жодних проєктів",
+      "create_first": "Створіть свій перший проєкт"
+    },
+    "badges": {
+      "priority": "Пріоритет",
+      "consultation": "Консультації"
+    },
+    "timeline": {
+      "stage_label": "Етап процедури",
+      "last_updated": "Останнє оновлення"
+    },
+    "actions": {
+      "view": "Перегляд",
+      "edit": "Редагувати",
+      "delete": "Видалити"
+    },
+    "toast": {
+      "project_deleted": "Проєкт видалено"
+    }
+  },
+
+  "status": {
+    "planowany": "Запланований",
+    "procedowany": "У процесі",
+    "uchwalony": "Прийнятий",
+    "odrzucony": "Відхилений",
+    "wycofany": "Відкликаний"
+  },
+
+  "progress": {
+    "przyjety": "Прийнято",
+    "w_toku": "Триває",
+    "archiwalny": "Архівний"
+  },
+  "citizen": {
+    "access_denied": {
+      "title": "Доступ заборонено",
+      "description": "Ця сторінка доступна лише для авторизованих громадян.",
+      "back_home": "Повернутися на головну"
+    },
+    "header": {
+      "title": "Мій профіль",
+      "email": "Email"
+    },
+    "tabs": {
+      "subscriptions": "Підписки",
+      "projects": "Відстежувані проєкти"
+    },
+    "subscriptions": {
+      "title": "Підписані категорії",
+      "empty": "Ви не підписані на жодну категорію",
+      "empty_hint": "Натисніть нижче, щоб додати підписки",
+      "add_new_title": "Додати нові підписки",
+      "category_count": "{{count}} проєктів",
+      "save_button": "Зберегти підписки категорій"
+    },
+    "projects": {
+      "tracking_title": "Відстежувані проєкти у громадських консультаціях",
+      "empty": "Ви не відстежуєте жодних проєктів",
+      "empty_hint": "Натисніть нижче, щоб додати проєкти для відстеження",
+      "available_title": "Доступні проєкти на консультації",
+      "all_tracked": "Усі проєкти на консультації вже відстежуються",
+      "consultation_until": "Консультації до {{date}}",
+      "save_button": "Зберегти відстежувані проєкти"
+    }
+  }
 }

@@ -79,5 +79,151 @@
   "status.activated": "activated",
   "status.deactivated": "deactivated",
   "admin.update_account": "Update account",
-  "admin.add_account": "Add account"
+  "admin.add_account": "Add account",
+  "admin.stats_total_accounts": "Total number of accounts",
+  "admin.stats_active": "Active",
+  "admin.stats_inactive": "Inactive",
+  "admin.search_placeholder": "Search by name or email...",
+  "admin.accounts_title": "Official accounts ({{count}})",
+  "admin.no_results": "No accounts match the search criteria",
+  "admin.no_accounts": "No accounts to display",
+  "table.email": "Email",
+  "table.name": "Name",
+  "table.role": "Role",
+  "table.status": "Status",
+  "table.created": "Created",
+  "table.actions": "Actions",
+  "table.copy_credentials": "Copy login credentials",
+  "table.edit_account": "Edit account",
+  "table.delete_account": "Delete account",
+  "admin.role_admin": "Administrator",
+  "admin.role_officer": "Officer",
+  "status.active": "Active",
+  "status.inactive": "Inactive",
+  "admin.delete_title": "Delete account?",
+  "admin.delete_description": "Are you sure? This action cannot be undone. The official’s account will be permanently deleted.",
+  "admin.cancel": "Cancel",
+  "admin.delete": "Delete",
+  "editor.breadcrumb_home": "Home",
+  "editor.breadcrumb_new_act": "New act",
+  "editor.title_create_new_act": "Creating a new legislative act",
+  "editor.basic.title": "Basic information",
+  "editor.fields.title.label": "Act title",
+  "editor.fields.title.placeholder": "Draft act on...",
+  "editor.fields.pdf.label": "Act content (PDF)",
+  "editor.fields.pdf.choose_file": "Choose PDF file",
+  "editor.fields.pdf.ogup_ai": "ogup ai",
+  "editor.fields.pdf.selected": "Selected",
+  "editor.fields.pdf.open_preview": "Open PDF preview",
+  "editor.fields.pdf.remove_file": "Remove file",
+  "editor.fields.pdf.no_file": "No PDF uploaded (optional)",
+  "editor.fields.summary.label": "Summary",
+  "editor.fields.summary.placeholder": "Short description of the purpose and scope of the act...",
+  "editor.fields.category.label": "Category",
+  "editor.select.category_placeholder": "Select a category",
+  "editor.fields.sponsor.label": "Sponsor",
+  "editor.select.sponsor_placeholder": "Select sponsor",
+  "editor.fields.status.label": "Status",
+  "status.planowany": "Planned",
+  "status.procedowany": "In progress",
+  "status.uchwalony": "Adopted",
+  "status.odrzucony": "Rejected",
+  "status.wycofany": "Withdrawn",
+  "editor.fields.priority.label": "Priority",
+  "priority.low": "Low",
+  "priority.normal": "Normal",
+  "priority.high": "High",
+  "editor.consultations.title": "Public consultations",
+  "editor.consultations.toggle_label": "The act includes public consultations",
+  "editor.consultations.start": "Start date",
+  "editor.consultations.end": "End date",
+  "editor.stages.title": "Stages of the legislative process",
+  "editor.stages.add_stage": "Add stage",
+  "editor.stages.select_placeholder": "Select a stage",
+  "editor.actions.cancel": "Cancel",
+  "editor.actions.save_act": "Save act",
+  "officer": {
+    "access_denied": {
+      "title": "Access denied",
+      "description": "This page is available only to officials.",
+      "back_home": "Return to homepage"
+    },
+    "header": {
+      "title": "My Projects",
+      "description": "Projects created by you ({{count}})",
+      "new_project": "New project"
+    },
+    "stats": {
+      "all_projects": "All projects",
+      "in_progress": "In progress",
+      "passed": "Passed",
+      "in_consultation": "In consultation"
+    },
+    "empty": {
+      "no_projects": "You have no projects yet",
+      "create_first": "Create your first project"
+    },
+    "badges": {
+      "priority": "Priority",
+      "consultation": "Consultations"
+    },
+    "timeline": {
+      "stage_label": "Procedure stage",
+      "last_updated": "Last updated"
+    },
+    "actions": {
+      "view": "Preview",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "toast": {
+      "project_deleted": "Project has been deleted"
+    }
+  },
+
+  "status": {
+    "planowany": "Planned",
+    "procedowany": "In progress",
+    "uchwalony": "Adopted",
+    "odrzucony": "Rejected",
+    "wycofany": "Withdrawn"
+  },
+
+  "progress": {
+    "przyjety": "Accepted",
+    "w_toku": "Ongoing",
+    "archiwalny": "Archived"
+  },
+  "citizen": {
+    "access_denied": {
+      "title": "Access denied",
+      "description": "This page is available only to logged-in citizens.",
+      "back_home": "Return to homepage"
+    },
+    "header": {
+      "title": "My profile",
+      "email": "Email"
+    },
+    "tabs": {
+      "subscriptions": "Subscriptions",
+      "projects": "Tracked projects"
+    },
+    "subscriptions": {
+      "title": "Subscribed categories",
+      "empty": "You are not subscribed to any categories",
+      "empty_hint": "Click below to add subscriptions",
+      "add_new_title": "Add new subscriptions",
+      "category_count": "{{count}} projects",
+      "save_button": "Save category subscriptions"
+    },
+    "projects": {
+      "tracking_title": "Projects tracked in public consultations",
+      "empty": "You are not tracking any projects",
+      "empty_hint": "Click below to add projects for tracking",
+      "available_title": "Available projects in consultations",
+      "all_tracked": "All consultation projects are already being tracked",
+      "consultation_until": "Consultations until {{date}}",
+      "save_button": "Save tracked projects"
+    }
+  }
 }
