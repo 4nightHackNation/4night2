@@ -43,6 +43,14 @@ export function ActFilters({
     (v) => v !== "" && v !== "all"
   );
 
+  // helper: jeśli label wygląda jak klucz (z kropką) -> tłumacz, jeśli nie -> zwróć sam label
+  const renderLabel = (labelOrKey: string, fallback?: string) => {
+    if (!labelOrKey) return fallback ?? "";
+    return labelOrKey.includes(".")
+      ? t(labelOrKey, fallback ?? labelOrKey)
+      : labelOrKey;
+  };
+
   return (
     <div className="gov-card mb-6">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -54,7 +62,7 @@ export function ActFilters({
             >
               <Filter className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-lg">
-                {t("actfilters.filters")}
+                {t("actfilters.filters", "Filtry")}
               </h3>
               {isOpen ? (
                 <ChevronUp className="h-4 w-4" />
@@ -71,7 +79,7 @@ export function ActFilters({
               className="text-muted-foreground hover:text-foreground"
             >
               <X className="h-4 w-4 mr-1" />
-              {t("actfilters.clear_filters")}
+              {t("actfilters.clear_filters", "Wyczyść filtry")}
             </Button>
           )}
         </div>
@@ -81,10 +89,13 @@ export function ActFilters({
             {/* Title search */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.title")}
+                {t("actfilters.title", "Tytuł")}
               </label>
               <Input
-                placeholder={t("actfilters.search_placeholder")}
+                placeholder={t(
+                  "actfilters.search_placeholder",
+                  "Szukaj po tytule..."
+                )}
                 value={filters.title}
                 onChange={(e) => onFilterChange("title", e.target.value)}
                 className="h-11"
@@ -94,18 +105,23 @@ export function ActFilters({
             {/* Category */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.categories")}
+                {t("actfilters.categories", "Kategorie")}
               </label>
               <Select
                 value={filters.category}
                 onValueChange={(v) => onFilterChange("category", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all_categories")} />
+                  <SelectValue
+                    placeholder={t(
+                      "actfilters.all_categories",
+                      "Wszystkie kategorie"
+                    )}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("actfilters.all_categories")}
+                    {t("actfilters.all_categories", "Wszystkie kategorie")}
                   </SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
@@ -119,22 +135,27 @@ export function ActFilters({
             {/* Status */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.status")}
+                {t("actfilters.status", "Status")}
               </label>
               <Select
                 value={filters.status}
                 onValueChange={(v) => onFilterChange("status", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all_statuses")} />
+                  <SelectValue
+                    placeholder={t(
+                      "actfilters.all_statuses",
+                      "Wszystkie statusy"
+                    )}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("actfilters.all_statuses")}
+                    {t("actfilters.all_statuses", "Wszystkie statusy")}
                   </SelectItem>
                   {filterOptions.status.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {t(opt.label)}
+                      {renderLabel(opt.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -144,20 +165,22 @@ export function ActFilters({
             {/* Progress */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.progress")}
+                {t("actfilters.progress", "Postęp prac")}
               </label>
               <Select
                 value={filters.progress}
                 onValueChange={(v) => onFilterChange("progress", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all")} />
+                  <SelectValue placeholder={t("actfilters.all", "Wszystkie")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("actfilters.all")}</SelectItem>
+                  <SelectItem value="all">
+                    {t("actfilters.all", "Wszystkie")}
+                  </SelectItem>
                   {filterOptions.postep.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {t(opt.label)}
+                      {renderLabel(opt.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -167,22 +190,24 @@ export function ActFilters({
             {/* Typ aktu */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.acttype")}
+                {t("actfilters.acttype", "Rodzaj aktu")}
               </label>
               <Select
                 value={filters.typAktu}
                 onValueChange={(v) => onFilterChange("typAktu", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all_types")} />
+                  <SelectValue
+                    placeholder={t("actfilters.all_types", "Wszystkie typy")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("actfilters.all_types")}
+                    {t("actfilters.all_types", "Wszystkie typy")}
                   </SelectItem>
                   {filterOptions.typAktu.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {t(opt.label)}
+                      {renderLabel(opt.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -192,18 +217,23 @@ export function ActFilters({
             {/* Wnioskodawca */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.applicant")}
+                {t("actfilters.applicant", "Wnioskodawca")}
               </label>
               <Select
                 value={filters.sponsor}
                 onValueChange={(v) => onFilterChange("sponsor", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all_applicants")} />
+                  <SelectValue
+                    placeholder={t(
+                      "actfilters.all_applicants",
+                      "Wszyscy wnioskodawcy"
+                    )}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("actfilters.all_applicants")}
+                    {t("actfilters.all_applicants", "Wszyscy wnioskodawcy")}
                   </SelectItem>
                   {sponsors.map((sponsor) => (
                     <SelectItem key={sponsor} value={sponsor}>
@@ -217,27 +247,32 @@ export function ActFilters({
             {/* Kadencja */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("actfilters.cadence")}
+                {t("actfilters.cadence", "Kadencja")}
               </label>
               <Select
                 value={filters.kadencja}
                 onValueChange={(v) => onFilterChange("kadencja", v)}
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder={t("actfilters.all_cadences")} />
+                  <SelectValue
+                    placeholder={t(
+                      "actfilters.all_cadences",
+                      "Wszystkie kadencje"
+                    )}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("actfilters.all_cadences")}
+                    {t("actfilters.all_cadences", "Wszystkie kadencje")}
                   </SelectItem>
                   <SelectItem value="X">
-                    {t("actfilters.kadencja_X")}
+                    {t("actfilters.kadencja_X", "X kadencja")}
                   </SelectItem>
                   <SelectItem value="IX">
-                    {t("actfilters.kadencja_IX")}
+                    {t("actfilters.kadencja_IX", "IX kadencja")}
                   </SelectItem>
                   <SelectItem value="VIII">
-                    {t("actfilters.kadencja_VIII")}
+                    {t("actfilters.kadencja_VIII", "VIII kadencja")}
                   </SelectItem>
                 </SelectContent>
               </Select>
