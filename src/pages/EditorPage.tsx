@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
-import { filterOptions } from "@/data/mockData";
+import { filterOptions, categories } from "@/data/mockData";
 
 const LEGISLATIVE_STAGES = [
   "Projekt został przyjęty do prac rady ministrów",
@@ -61,6 +61,7 @@ const LEGISLATIVE_STAGES = [
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
+  API_URL,
   API_ENDPOINTS,
   apiGet,
   apiPost,
@@ -114,6 +115,7 @@ interface CreateActFormState {
   status: StatusType;
   priority: PriorityType;
   sponsor: string;
+  category: string;
   kadencja: string;
   currentStage: number;
   hasConsultation: boolean;
@@ -145,6 +147,7 @@ export default function EditorPage() {
     status: "draft",
     priority: "normal",
     sponsor: "",
+    category: "",
     kadencja: "",
     currentStage: 0,
     hasConsultation: false,
@@ -190,6 +193,7 @@ export default function EditorPage() {
           status: (data.status as StatusType) ?? "draft",
           priority: (data.priority as PriorityType) ?? "normal",
           sponsor: data.sponsor ?? "",
+          category: data.category ?? "",
           kadencja: data.kadencja ?? "",
           currentStage: data.currentStage ?? 0,
           hasConsultation: Boolean(data.hasConsultation),
@@ -273,20 +277,24 @@ export default function EditorPage() {
   const handleCreateAct = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.sponsor || !formData.kadencja) {
+    if (!formData.title || !formData.sponsor || !formData.category || !formData.kadencja) {
       toast.error("Uzupełnij wymagane pola", {
-        description: "Tytuł, sponsor i kadencja są wymagane.",
+        description: "Tytuł, sponsor, kategoria i kadencja są wymagane.",
       });
       return;
     }
 
     try {
+      // Filtruj duplikaty tagów
+      const uniqueTagIds = [...new Set(formData.tagIds)];
+
       const payload = {
         title: formData.title,
         plainLanguageSummary: formData.plainLanguageSummary,
         status: formData.status,
         priority: formData.priority,
         sponsor: formData.sponsor,
+        category: formData.category,
         kadencja: formData.kadencja,
         currentStage: formData.currentStage,
         hasConsultation: formData.hasConsultation,
@@ -296,7 +304,7 @@ export default function EditorPage() {
         consultationEnd: formData.consultationEnd
           ? new Date(formData.consultationEnd).toISOString()
           : null,
-        tagIds: formData.tagIds,
+        tagIds: uniqueTagIds,
       };
 
       const res = await apiPost(API_ENDPOINTS.ACTS.CREATE, payload);
@@ -328,12 +336,16 @@ export default function EditorPage() {
     if (!createdActId) return;
 
     try {
+      // Filtruj duplikaty tagów
+      const uniqueTagIds = [...new Set(formData.tagIds)];
+
       const payload = {
         title: formData.title,
         plainLanguageSummary: formData.plainLanguageSummary,
         status: formData.status,
         priority: formData.priority,
         sponsor: formData.sponsor,
+        category: formData.category,
         kadencja: formData.kadencja,
         currentStage: formData.currentStage,
         hasConsultation: formData.hasConsultation,
@@ -343,7 +355,7 @@ export default function EditorPage() {
         consultationEnd: formData.consultationEnd
           ? new Date(formData.consultationEnd).toISOString()
           : null,
-        tagIds: formData.tagIds,
+        tagIds: uniqueTagIds,
       };
 
       const res = await apiPut(API_ENDPOINTS.ACTS.UPDATE(createdActId), payload);
@@ -623,24 +635,49 @@ export default function EditorPage() {
       return;
     }
 
+    // Sprawdzamy czy mamy PDF dla tej wersji
+    const pdfFile = versionId ? pdfFiles[versionId] : null;
+    if (!pdfFile) {
+      toast.error("Najpierw dodaj plik PDF");
+      return;
+    }
+
     setGeneratingSummary(true);
     try {
-      const endpoint = versionId
-        ? `${API_ENDPOINTS.EXPLANATIONS.GENERATE(createdActId)}?versionId=${versionId}`
-        : API_ENDPOINTS.EXPLANATIONS.GENERATE(createdActId);
+      // Wysyłamy PDF jako multipart/form-data
+      const formData = new FormData();
+      formData.append('file', pdfFile);
 
-      // Use GET-like approach but with POST method and query params
-      const url = `${API_ENDPOINTS.EXPLANATIONS.GENERATE(createdActId)}${versionId ? `?versionId=${versionId}` : ''}`;
-      const res = await apiPost(url, {});
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${API_URL}${API_ENDPOINTS.EXPLANATIONS.FROM_PDF}`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
       if (!res.ok) {
-        toast.error("Nie udało się wygenerować streszczenia");
+        const error = await res.json().catch(() => ({ message: "Nie udało się wygenerować streszczenia" }));
+        toast.error(error.message || "Nie udało się wygenerować streszczenia");
         return;
       }
 
-      const summary = await res.text();
+      const result = await res.json();
+      const summary = result.explanation || result.plainLanguageSummary || result.text || '';
+      
+      if (!summary) {
+        toast.error("Serwer nie zwrócił streszczenia");
+        return;
+      }
+
       handleFormChange("plainLanguageSummary", summary);
       toast.success("Streszczenie zostało wygenerowane");
     } catch (error) {
+      console.error('AI Explanation error:', error);
       toast.error("Wystąpił błąd podczas generowania streszczenia");
     } finally {
       setGeneratingSummary(false);
@@ -797,6 +834,27 @@ export default function EditorPage() {
                       className="mt-2 h-12"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="category" className="text-base">
+                      Kategoria *
+                    </Label>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(value) => handleFormChange("category", value)}
+                    >
+                      <SelectTrigger className="mt-2 h-12">
+                        <SelectValue placeholder="Wybierz kategorię" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div>
@@ -1043,6 +1101,27 @@ export default function EditorPage() {
                       onChange={(e) => handleFormChange("sponsor", e.target.value)}
                       className="mt-2 h-12"
                     />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="category" className="text-base">
+                      Kategoria *
+                    </Label>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(value) => handleFormChange("category", value)}
+                    >
+                      <SelectTrigger className="mt-2 h-12">
+                        <SelectValue placeholder="Wybierz kategorię" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div>

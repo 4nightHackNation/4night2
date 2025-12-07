@@ -270,18 +270,25 @@ export default function OfficerProjectsPage() {
                       </p>
                       {(() => {
                         const stages = Array.isArray(project.stages) ? project.stages : [];
-                        const currentStageIndex = Math.max(
-                          0,
-                          Math.min(
-                            typeof project.currentStage === "number"
-                              ? project.currentStage - 1
-                              : 0,
-                            stages.length - 1
-                          )
-                        );
+                        
+                        // Jeśli nie mamy etapów, pokazujemy "Brak etapu"
+                        if (stages.length === 0) {
+                          return (
+                            <p className="font-semibold text-sm leading-relaxed text-muted-foreground">
+                              Brak etapu
+                            </p>
+                          );
+                        }
+
+                        // Pobierz numer obecnego etapu (domyślnie 1)
+                        const currentStageNumber = typeof project.currentStage === "number" && project.currentStage > 0
+                          ? project.currentStage
+                          : 1;
+                        
+                        // Konwertuj na index (0-based)
+                        const currentStageIndex = Math.min(currentStageNumber - 1, stages.length - 1);
                         const currentStage = stages[currentStageIndex];
-                        const currentStageName =
-                          currentStage?.name || currentStage?.title || "Brak etapu";
+                        const currentStageName = currentStage?.name || currentStage?.title || "Etap nieznany";
 
                         return (
                           <p className="font-semibold text-sm leading-relaxed">
