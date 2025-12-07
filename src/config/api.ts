@@ -65,10 +65,10 @@ export const API_ENDPOINTS = {
   // Tagi - TagsController
   TAGS: {
     LIST: '/tags',
-    DETAIL: (id: number) => `/tags/id?id=${id}`,
+    DETAIL: (id: number | string) => `/tags/tags/id?id=${id}`,
     CREATE: '/tags',
-    UPDATE: (id: number) => `/tags/${id}`,
-    DELETE: (id: number) => `/tags/${id}`,
+    UPDATE: (id: number | string) => `/tags/${id}`,
+    DELETE: (id: number | string) => `/tags/${id}`,
   },
 } as const;
 
