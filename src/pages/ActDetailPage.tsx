@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { API_ENDPOINTS, apiGet } from "@/config/api";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
+import { SubscriptionEmailDialog } from "@/components/SubscriptionEmailDialog";
 
 // Helper do formatowania dat
 const formatDate = (dateString: string | undefined) => {
@@ -42,6 +43,7 @@ export default function ActDetailPage() {
   const [act, setAct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [subscribed, setSubscribed] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Pobranie aktu z API
   useEffect(() => {
@@ -101,14 +103,19 @@ export default function ActDetailPage() {
   const category = categories.find((c) => c.id === act.category);
 
   const handleSubscribe = () => {
-    setSubscribed(!subscribed);
     if (!subscribed) {
-      toast.success("Zasubskrybowano akt", {
-        description: "Będziesz otrzymywać powiadomienia o zmianach.",
-      });
+      setDialogOpen(true);
     } else {
+      setSubscribed(false);
       toast.info("Anulowano subskrypcję aktu");
     }
+  };
+
+  const handleEmailSubscribe = async (email: string) => {
+    // Here you would typically make an API call to subscribe
+    // For now, we'll just simulate it
+    setSubscribed(true);
+    console.log(`Subscribed to act "${act.title}" with email: ${email}`);
   };
 
   const handleDownload = () => {
@@ -118,19 +125,20 @@ export default function ActDetailPage() {
   };
 
   return (
-    <Layout>
-      {/* Breadcrumb */}
-      <div className="bg-muted border-b border-border">
-        <div className="container mx-auto px-4 py-3">
-          <nav className="flex items-center gap-2 text-sm flex-wrap">
-            <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
-              Strona główna
-            </Link>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            <Link
-              to={`/kategoria/${act.category}`}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
+    <>
+      <Layout>
+        {/* Breadcrumb */}
+        <div className="bg-muted border-b border-border">
+          <div className="container mx-auto px-4 py-3">
+            <nav className="flex items-center gap-2 text-sm flex-wrap">
+              <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+                Strona główna
+              </Link>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <Link
+                to={`/kategoria/${act.category}`}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
               {category?.name}
             </Link>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -382,6 +390,15 @@ export default function ActDetailPage() {
           </div>
         </div>
       </div>
-    </Layout>
+      </Layout>
+      
+      <SubscriptionEmailDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSubscribe={handleEmailSubscribe}
+        title={`Subskrybuj akt: ${act.title}`}
+        description="Wpisz swój email, aby otrzymywać powiadomienia o zmianach w tym akcie"
+      />
+    </>
   );
 }
